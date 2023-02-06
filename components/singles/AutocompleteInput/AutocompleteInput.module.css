@@ -1,0 +1,12 @@
+.autocomplete-input {
+    border: solid rgb(160, 160, 160) 1px;
+    width: 100%;
+}
+
+.datalist-container {
+    font-weight: bolder;
+}
+
+.option-datalist-item {
+    font-weight: bolder;
+}

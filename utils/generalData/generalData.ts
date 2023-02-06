@@ -1,0 +1,1 @@
+export const pathSrcImagen = '/img/invent369Logo.png';

@@ -1,0 +1,32 @@
+.servicios-frame-container {
+    width: 80vw;
+    height: 30vw;
+    margin: 0 auto;
+    margin-top: 2rem;
+    display: flex;
+    justify-content: space-between;
+    /* display: grid; */
+    /* grid-template-columns: 1fr 3fr 2fr; */
+
+    /* background-color: red; */
+    /* border: solid black 1px; */
+}
+
+/** THE SECOND CHILD  */
+.servicios-frame-container {
+    /* width: 50%; */
+    flex: 0.3;
+
+}
+
+.servicios-frame-container:first-child{
+    /* width: 20%; */
+    flex: 0.3;
+}
+
+
+
+.servicios-frame-container:last-child{
+    /* width: 20%;     */
+    flex: 0.3;
+}

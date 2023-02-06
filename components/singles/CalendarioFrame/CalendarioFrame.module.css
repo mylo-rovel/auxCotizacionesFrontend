@@ -1,0 +1,24 @@
+.calendar-frame {
+    width: 50vw;
+    height: fit-content;
+    position: relative;
+    z-index: 999;
+    margin: 0 auto;
+    margin-top: 2rem;
+    border: solid black 1px;
+    border-radius: 5px;
+    padding: 0.25rem 0.5rem;
+}
+
+.calendar-frame div div button {
+    padding: 0 0.5rem;
+}
+
+.calendar-frame div,
+.calendar-frame button {
+    font-size: 1.35rem;
+}
+
+.calendar-frame abbr{
+    text-decoration: none;
+}

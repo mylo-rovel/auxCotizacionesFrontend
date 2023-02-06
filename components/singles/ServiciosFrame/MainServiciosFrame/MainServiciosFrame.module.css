@@ -1,0 +1,10 @@
+.main-frame-container {
+    flex-grow: 1;
+    border: solid black 1px;
+    margin: 0 0.5rem;
+    min-height: 30vh;
+}
+
+.test {
+    background-color: red;
+}

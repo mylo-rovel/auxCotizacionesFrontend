@@ -1,0 +1,37 @@
+.bottom-pageSwitchers-container {
+    width: fit-content;
+    margin: 0 auto;
+    margin-top: 2rem;
+}
+
+.bottom-pageSwitchers-container button {
+    font-size: 1.5rem;
+    font-weight: bolder;
+    font-weight: initial;
+    letter-spacing: 3px;
+    padding: 0.75rem 0.55rem;
+    margin: 0.5rem 0;
+    background-color: transparent;
+    border: 0;
+    border-top: solid rgb(230, 230, 230) 1px;
+    border-bottom: solid rgb(230, 230, 230) 1px;
+    transition: all 0.4s;
+}
+
+.bottom-pageSwitchers-container button:hover {
+    background-color: transparent;
+    opacity: 1;
+    font-weight: bolder;
+    border-color: black;
+    letter-spacing: 2px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    cursor: pointer;
+}
+
+
+.contenido-no-encontrado {
+    width: fit-content;
+    margin: 0 auto;
+    margin-top: 2rem;
+}

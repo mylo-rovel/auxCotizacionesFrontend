@@ -1,0 +1,69 @@
+.providerData-container {
+    width: 60vw;
+    height: fit-content;
+    margin: 0 auto;
+    border: solid black 1px;
+    display: flex;
+    --img-flex-size: 0.4;
+    --obj-property-flex-size:0.4;
+}
+
+.image-section {
+    flex: var(--img-flex-size);
+    position: relative;
+}
+
+.text-values-section {
+    flex: calc(1 - var(--img-flex-size));
+}
+
+
+.row-container {
+    display:flex;
+    margin-bottom: 0.5rem;
+    border: solid black 1px;
+    border-left: 0;
+    margin-right: 0.5rem;
+}
+
+.row-container:first-child {
+    border-top: 0;
+}
+.row-container:last-child {
+    border-bottom: 0;
+    margin-bottom: 0;
+}
+
+
+.obj-property-section {
+    flex: var(--obj-property-flex-size);
+    padding-left: 0.5rem;
+}
+
+.obj-value-section {
+    flex: calc(1 - var(--obj-property-flex-size));
+    width: 100%;
+}
+
+
+/*  ---------------------------------------------------  */
+
+
+
+
+.modificar-config-button-container {
+    margin-top: 0.5rem;
+    margin-bottom: 0.1rem;
+    display: flex;
+}
+
+/* we are "creating" an auxiliar element just to give it space */
+.modificar-config-button-container:first-child::before {
+    content: "";
+    flex: 0.77
+}
+
+.modificar-config-button-container button {
+    background-color: white;
+    border-color: white;
+}

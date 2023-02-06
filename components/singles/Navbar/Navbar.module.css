@@ -1,0 +1,9 @@
+.navbar-container {
+    width: 100vw;
+    height: fit-content;
+    padding: 0.5rem 0;
+    display: flex;
+    justify-content: space-around;
+    border-bottom: solid black 0.15rem;
+    background: rgb(250, 250, 250);
+}

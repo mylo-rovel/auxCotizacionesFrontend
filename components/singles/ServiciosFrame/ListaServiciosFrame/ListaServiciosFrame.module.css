@@ -1,0 +1,18 @@
+.lista-servicios-container {
+    overflow-y: scroll;
+    width: 15rem;
+    max-width: 20vw;
+    border: solid black 1px;
+    padding: 0.35rem;
+}
+
+.servicio-row-container {
+    margin-top: 0.5rem;
+    border-top: solid black 1px;
+    padding-left: 0.2rem;
+}
+
+.servicios-guardados-title {
+    width: fit-content;
+    margin: 0 auto;
+}
