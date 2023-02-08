@@ -1,15 +1,14 @@
 import { GetStaticProps } from 'next';
 
+import { IHomePageProps } from "models";
 import { NextPageWithLayout } from "./_app";
-import { IHomePageProps } from "../../models";
-import { MainLayout } from '../../components/layouts';
+import { MainLayout } from 'components/layouts';
+import { MainPageFrame } from 'components/singles';
 
 const HomePage: NextPageWithLayout<IHomePageProps> = (props) => {
   return (
     <>
-      <h1>
-        hola mundo equis d        
-      </h1>
+      <MainPageFrame/>
     </>
   )
 };

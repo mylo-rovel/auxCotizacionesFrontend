@@ -8,6 +8,7 @@ export * from './pages/configuracion/IConfiguracionPageProps';
 export * from './components/layouts/mainLayout/IMainLayoutProps';
 export * from './components/singles/fancyButton/IFancyButtonProps';
 export * from './components/singles/clienteFrame/IClienteFrameProps';
+export * from './components/singles/mainPageFrame/IMainPageFrameProps';
 export * from './pages/registrarServicios/IRegistrarServiciosPageProps';
 export * from './components/singles/serviciosFrame/IServiciosFrameProps';
 export * from './components/singles/calendarioFrame/ICalendarioFrameProps';

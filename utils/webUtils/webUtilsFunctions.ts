@@ -21,7 +21,6 @@ export const enviarDatosServicio = async (dataToSend: IServicioDataToSend) => {
             }
             
             resultadoPeticion = await DataRequester.agregarServicioNuevo(reqBodyToSend);
-            window.location.reload();
             setResultadoPeticion(resultadoPeticion);
             return;
         //* --------------------------------------------------------

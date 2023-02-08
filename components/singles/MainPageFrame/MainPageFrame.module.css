@@ -1,0 +1,21 @@
+.main-page-frame-main-container {
+    /* background-color: red; */
+    height: 70vh;
+    display: grid;
+    place-content: center;
+}
+
+.main-page-temporal-title h1{
+    /* background-color: blue; */
+    font-size: 3rem;
+    width: 70%;
+    text-align: center;
+    margin: 0 auto;
+}
+
+.main-page-logo-container {
+    width: 150px;
+    height: 150px;
+    position: relative;  /* ULTRA MEGA IMPORTANT TO ADD */
+    margin: 0 auto;
+}
