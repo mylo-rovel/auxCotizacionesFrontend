@@ -5,3 +5,8 @@ export interface IServicioData {
     created_at: string;
     updated_at: string;
 }
+
+export interface IServicioIDData {
+    // nombreServicio: idServicio
+    [key:string]: number;
+}

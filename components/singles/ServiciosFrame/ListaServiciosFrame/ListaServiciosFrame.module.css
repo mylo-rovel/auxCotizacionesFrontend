@@ -2,8 +2,9 @@
     overflow-y: scroll;
     width: 15rem;
     max-width: 20vw;
-    border: solid black 1px;
     padding: 0.35rem;
+    border: solid black 1px;
+    border-radius: 5px;
 }
 
 .servicio-row-container {

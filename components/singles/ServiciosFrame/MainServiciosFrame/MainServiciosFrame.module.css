@@ -1,10 +1,94 @@
 .main-frame-container {
     flex-grow: 1;
-    border: solid black 1px;
     margin: 0 0.5rem;
     min-height: 30vh;
+    height: fit-content;
+    padding-bottom: 1.25rem;
+    border: solid black 1px;
+    border-radius: 5px;
 }
 
-.test {
-    background-color: red;
+.main-frame-container section {
+    width: 90%;
+    margin: 0 auto;
+}
+
+/** THE TITLE OF THE MAIN FRAME */
+.main-frame-container section:first-child {
+    font-size: 2rem;
+    width: fit-content;
+    margin: 0 auto;
+    margin-top: 1rem;
+    margin-bottom: 1.25rem;
+    /* background-color: blue; */
+}
+
+/** EACH INPUT BOX IN THE MAIN FRAME */
+.main-frame-container section input {
+    box-sizing: border-box;
+    width: 100%;
+    font-weight: bolder;
+    font-size: 1.25rem;
+    border: solid black 1px;
+    border-radius: 0.25rem;
+    padding: 0 0.5rem;
+}
+
+/** IMPORTANT BECAUSE THIS POINTS TO THE COMPONENT WE IMPORTED */
+.autocomplete-limited-container {
+    width: 100%;
+}
+
+/** STYLE FOR THE MODE BUTTONS */
+.bottom-buttons-container {
+    display: flex;
+    justify-content: space-between;
+    width: 90%;
+    margin: 0 auto;
+    margin-top: 5%;
+    /* background-color: blue; */
+}
+
+/** THIS WAY WE REACH ALL BUTTONS */
+.bottom-buttons-container div button{
+    width: fit-content;
+    border: solid black 1px;
+    border-radius: 5px;
+    padding: 0.25rem;
+    cursor: pointer;
+}
+.mode-buttons-container button:nth-child(1){
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+.mode-buttons-container button:nth-child(2){
+    border-right: 0;
+    border-left: 0;
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+}
+.mode-buttons-container button:nth-child(3){
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+}
+
+
+.bottom-buttons-container button h4{
+    font-size: 1.25rem;
+    transition: all 0.25s;
+}
+
+.unactive-mode-button {
+    opacity: 0.70;
+}
+
+.unactive-mode-button:hover,
+.save-service-button-container button:hover {
+    letter-spacing: 2px;
+}
+
+.save-service-button-container button {
+    background-color: rgb(0, 212, 0);
 }

@@ -2,6 +2,7 @@ export * from './pages/index/HomePageProps';
 export * from './pages/servicios/IServiciosPageProps';
 export * from './apiClient/dataRequester/IServicioData';
 export * from './apiClient/dataRequester/IProviderData';
+export * from './apiClient/dataRequester/IClientesData';
 export * from './components/singles/navbar/INavbarProps';
 export * from './pages/configuracion/IConfiguracionPageProps';
 export * from './components/layouts/mainLayout/IMainLayoutProps';
