@@ -1,5 +1,5 @@
-import { FC, CSSProperties, Dispatch, SetStateAction, ChangeEvent } from 'react';
 import { AutoComplete } from 'antd';
+import { FC, CSSProperties, Dispatch, SetStateAction, ChangeEvent, useRef } from 'react';
 
 
 import { enviarDatosServicio } from 'utils';
@@ -42,20 +42,30 @@ const ButtonModeado:FC<IButtonModeadoProps> = ({modoObjetivo, modoActivo, setNew
 
 
 export const MainServiciosFrame: FC<IMainServiciosFrameProps> = ({modoInterfaz, serviciosGuardados, mainServicioSetter, mainPrecioSetter, modoSetter, datosServicioEnviar}) => {
-    const listaServicios = serviciosGuardados.map((servicio) => ({ value: servicio }));
+    const nombreServicioRef = useRef<string>('');
+
+    const listaServicios: { value: string }[] = [];
+    const preciosDeServiciosCollection: {[key:string]: number} = {};
+    serviciosGuardados.forEach((servicio) => {
+        listaServicios.push({ value: servicio.descripcion });
+        preciosDeServiciosCollection[servicio.descripcion] = servicio.valor_unitario;
+    });
+    
     const isAgregarMode = (modoInterfaz === 'AGREGAR');
+
+    const otherModesPlaceholder = (nombreServicioRef.current in preciosDeServiciosCollection) ? `$${preciosDeServiciosCollection[nombreServicioRef.current]} c/u` : 'Escoger servicio';
+    const precioPlaceholder = (isAgregarMode) ? 'Escriba el precio del servicio' : otherModesPlaceholder;
 
     const setName = (serviceNameValue: unknown) => {
         if (typeof serviceNameValue === 'string') {
-            console.log(serviceNameValue)
             mainServicioSetter(serviceNameValue);
+            nombreServicioRef.current = serviceNameValue;
         }
     }
 
     const setPrice = (eObj: ChangeEvent<HTMLInputElement>) => {
         const newPrice = Number(eObj.target.value);
         if (newPrice >= 0) mainPrecioSetter(newPrice);
-        console.log(newPrice)   
     }
 
     return <>
@@ -81,9 +91,11 @@ export const MainServiciosFrame: FC<IMainServiciosFrameProps> = ({modoInterfaz, 
         <section className={`${styles['modify-servicio-price-container']}`}>
             <label><h2>Precio unitario</h2></label>
             <input 
-                placeholder = {(isAgregarMode) ? 'Escriba el precio del servicio' : 'Desabilitado'}
+                placeholder = {precioPlaceholder}
                 type='number' 
                 min={0}
+                max={999999999}
+                maxLength={9}
                 onChange={(eObj) => setPrice(eObj)}
                 disabled = {!isAgregarMode} //? SÓLO AGREGAR PRECIO SI ES AGREGAR
             />

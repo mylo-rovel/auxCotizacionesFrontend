@@ -19,6 +19,7 @@ export const MainPageFrame: FC<IMainPageFrameProps> = () => {
                     src={`/img/cotizacionLogo.png`}
                     alt='logoCotizaciones'
                     fill
+                    unoptimized
                 />
             </div>
         </article>

@@ -1,5 +1,6 @@
-import { IServicioIDData } from "models";
 import { Dispatch, MutableRefObject, SetStateAction } from "react";
+
+import { IServicioData, IServicioIDData } from "models";
 
 export interface IServiciosFrameProps {
     
@@ -14,6 +15,7 @@ export interface IServicioDataToSend {
     servicioModificadoData : IServicioModificadoData;
 
     setResultadoPeticion: Dispatch<SetStateAction<string>>;
+    setDisplayModal: Dispatch<SetStateAction<boolean>>;
 }
 
 //* THIS GOES TO ModifyServicioFrame
@@ -32,8 +34,9 @@ export interface IModifyServicioFrameProps {
 export type modoInterfazServicios = 'AGREGAR' | 'MODIFICAR' | 'ELIMINAR';
 
 export interface IMainServiciosFrameProps {
+    serviciosGuardados: IServicioData[];
+
     modoInterfaz: modoInterfazServicios;
-    serviciosGuardados: string[];
     mainServicioSetter: Dispatch<SetStateAction<string>>;
     mainPrecioSetter: Dispatch<SetStateAction<number>>
     modoSetter: Dispatch<SetStateAction<modoInterfazServicios>>;
@@ -41,7 +44,7 @@ export interface IMainServiciosFrameProps {
 }
 
 export interface IListaServGuardadosFrameProps {
-    serviciosGuardados: string[];
+    serviciosGuardados: IServicioData[];
 }
 
 

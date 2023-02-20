@@ -15,12 +15,10 @@ export const ModifyServicioFrame: FC<IModifyServicioFrameProps> = ({modoInterfaz
             if (newPrice >= 0) {
                 nuevoServicioData.current['nuevoPrecio'] = newPrice;
             }
-            console.log(nuevoServicioData.current);
             //* NO NEED TO CONTINUE IF WE REACHED THIS POINT
             return;
         }
         nuevoServicioData.current['nuevoNombre'] = rawNewValue;
-        console.log(nuevoServicioData.current);
         return;
     }
 

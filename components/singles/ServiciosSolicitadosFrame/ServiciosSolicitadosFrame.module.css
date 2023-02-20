@@ -1,0 +1,120 @@
+.servicios-solicitados-container {
+    min-width: 70vw;
+    max-width: 80vw;
+    height: 30vw;
+    /* height: fit-content; */
+    overflow-y: scroll;
+    margin: 0 auto;
+    margin-top: 1rem;
+    /* padding: 0.45rem 0.55rem; */
+    
+    /* border: solid black 1px; */
+    /* border-radius: 5px; */
+    
+    --font-size-to-use: 1.35rem;
+    font-size: var(--font-size-to-use);
+
+    --base-column-width: 20%;
+}
+
+/** HACER QUE LA TABLA USE TODO EL ANCHO DEL CONTENEDOR */
+.servicios-solicitados-container table {
+    width: 100%;
+}
+
+/** ESTILANDO LAS COLUMNAS */
+.table-column-codigo {
+    --codigo-column-extra-width: 0%;
+    width: calc(var(--base-column-width) + var(--codigo-column-extra-width));
+}
+
+.table-column-descripcion {
+    --descripcion-column-extra-width: 10%;
+    width: calc(var(--base-column-width) + var(--descripcion-column-extra-width));
+}
+
+.table-column-valorunitario {
+    --valorunitario-column-extra-width: -5%;
+    width: calc(var(--base-column-width) + var(--valorunitario-column-extra-width));
+}
+
+.table-column-cantidad {
+    --cantidad-column-extra-width: -5%;
+    width: calc(var(--base-column-width) + var(--cantidad-column-extra-width));
+}
+
+.table-column-valor {
+    --valor-column-extra-width: 0%;
+    width: calc(var(--base-column-width) + var(--valor-column-extra-width));
+}
+
+
+
+/** DARLE UN CUADRITO A CADA ELEMENTO DE LA TABLA */
+.servicios-solicitados-container th, 
+.servicios-solicitados-container td {
+    border:1px solid black;
+    padding: 0 0.25rem;
+}
+
+
+/** ESTILANDO LOS BOTONES (+) Y (-) */
+.servicios-solicitados-container tbody tr .servicio-solicitado-row-button{
+    border: 0;
+    width: 1rem;
+}
+.servicios-solicitados-container tbody tr .servicio-solicitado-row-button button{
+    width: 2rem;
+    height: 2rem;
+    display: grid;
+    place-content: center;
+    transition: all 0.5s;
+}
+.servicios-solicitados-container tbody tr .servicio-solicitado-row-button button *{
+    font-size: 1.15rem;
+}
+/** BOTON (+) y BOTON (-)*/
+.add-row-button:hover,
+.remove-row-button:hover {
+    border: 0;
+    border-radius: 5px;
+    cursor: pointer;
+}
+/** BOTON (+) */
+.add-row-button:hover {
+    background-color: rgb(0, 255, 0);
+}
+/** BOTON (-) */
+.remove-row-button:hover {
+    background-color: rgb(255, 0, 0);
+}
+.hidden-button {
+    background-color: transparent;
+    border: 0;
+}
+
+
+
+/** ESTILANDO LOS INPUT BOX */
+.servicio-solicitado-row input[type='text'],
+.servicio-solicitado-row input[type='number']{
+    width: 98%;
+
+    border: solid rgb(145, 145, 145) 1px;
+    border-left: 0;
+    border-right: 0;
+    
+    line-height: 3rem;
+    font-weight: bolder;
+    font-size: 1.4rem;
+}
+.servicio-solicitado-row-autocomplete div {
+    border: 0;
+}
+
+
+/** ESTILANDO COLUMNAS ESPECÍFICAS */
+.table-cell-valorunitario h4{
+    width: fit-content;
+    margin: 0 auto;
+}

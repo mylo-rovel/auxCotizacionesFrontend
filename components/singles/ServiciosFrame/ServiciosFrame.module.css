@@ -2,15 +2,49 @@
     width: 80vw;
     height: 30vw;
     margin: 0 auto;
-    /* margin-top: 3.5rem; */
+    margin-top: 3.3rem;
     display: flex;
     justify-content: space-between;
 }
 
-.servicio-error-container {
-    margin: 0.6rem 0;
+.resultado-peticion-container {
+    background-color: white;
+    position: absolute;
+    z-index: 999;
+
+    /** This is the part that center the container */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    /** Moving up the modal */
+    top: 30%;
+
+    /** Making the modal resizable depending to the content */
+    width: fit-content;
+    height: fit-content;
+
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border: solid black 1px;
 }
-.servicio-error-container h1 {
+
+.resultado-peticion-container h1 {
+    font-weight: bolder;
+    margin-top: 0.2rem;
+}
+
+.resultado-peticion-container section {
     width: fit-content;
     margin: 0 auto;
+    margin-top: 0.5rem;
+}
+
+.resultado-peticion-container section button {
+    font-weight: initial;
+    padding: 0;
+    background-color: transparent;
+    border-color: transparent;
+    opacity: 1;
+    transition: all 0.2s;
 }

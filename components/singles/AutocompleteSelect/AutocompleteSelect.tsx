@@ -1,9 +1,9 @@
 import { FC } from 'react';
 
-import { IAutocompleteInputProps } from 'models';
-import styles from './AutocompleteInput.module.css';
+import { IAutocompleteSelectProps } from 'models';
+import styles from './AutocompleteSelect.module.css';
 
-export const AutocompleteInput:FC<IAutocompleteInputProps> = ({dataListID, optionsList, placeholderText, cssClasses}) => {
+export const AutocompleteSelect:FC<IAutocompleteSelectProps> = ({dataListID, optionsList, placeholderText, cssClasses}) => {
     const cssClassesToUse = `${styles['autocomplete-input']}
     ${cssClasses}`
     

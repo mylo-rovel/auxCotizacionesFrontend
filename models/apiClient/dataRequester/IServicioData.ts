@@ -1,3 +1,13 @@
+export interface IServicioDataAccessObj{
+    //* NOMBRE SERVICIO : DATOS DEL SERVICIO
+    [key:string] : IServicioData;
+}
+
+export interface IServicioIDDataAccessObj{
+    //* ID SERVICIO : DATOS DEL SERVICIO
+    [key:number] : IServicioData;
+}
+
 export interface IServicioData {
     id: number;
     descripcion: string;

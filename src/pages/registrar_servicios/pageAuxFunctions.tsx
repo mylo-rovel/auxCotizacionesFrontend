@@ -2,7 +2,8 @@ import { Dispatch, SetStateAction } from 'react';
 
 import { getFixedDateSetter } from 'utils';
 import styles from "./registrar_servicios.module.css";
-import { CalendarFrame, ConfiguracionFrame } from 'components/singles';
+import { CalendarFrame, ClienteFrame, ServiciosSolicitadosFrame } from 'components/singles';
+import { IInputClienteDataEnviar, IServicioSolicitado, IValoresExtraCotizacion } from 'models';
 
 
 export function handleIndexChange(prevState:number, variation:number, maxIndex:number) {
@@ -12,29 +13,44 @@ export function handleIndexChange(prevState:number, variation:number, maxIndex:n
 }
 
 
-
-
 // ? THIS IS THE COLLECTION OF SETTERS WE GET FROM React.useState()
 type settersArrTypes = [
     pageIndex: number,
-    innerDateSetter: Dispatch<SetStateAction<Date>>,     
-    pageIndexSetter: Dispatch<SetStateAction<number>>
+    pageIndexSetter: Dispatch<SetStateAction<number>>,
+    
+    innerCotiValExtaSetter: Dispatch<SetStateAction<IValoresExtraCotizacion>>,
+    setClienteData: Dispatch<SetStateAction<IInputClienteDataEnviar>>,
+    setServSolicitadosArr: Dispatch<SetStateAction<IServicioSolicitado[]>>,
+
+    cotiValoresExtra: IValoresExtraCotizacion,
+    clienteData: IInputClienteDataEnviar,
+    serviciosSolicitadosArr: IServicioSolicitado[]
 ]
+
 
 interface IPageOptions {[key:number]: JSX.Element}
 
 export function getPageContent(settersArr: settersArrTypes): JSX.Element {    
     const pageIndex = settersArr[0];
-    const innerDateSetter = settersArr[1];
-    const pageIndexSetter = settersArr[2];
+    const pageIndexSetter = settersArr[1];
 
-    //? BUSCAMOS GUARDAR LA FECHA GUARDADA, Y DEJAR EL INDICE EN 1 
+    const innerCotiValExtaSetter = settersArr[2];
+    const innerClienteDataSetter = settersArr[3];
+    const innerServSolicitadosArrSetter = settersArr[4];
+
+    const innerCotiValoresExtra = settersArr[5];
+    const innerClienteData = settersArr[6];
+    const innerServiciosSolicitadosArr = settersArr[7];
+
+    //? BUSCAMOS GUARDAR LA FECHA SELECCIONADA, Y DEJAR EL INDICE EN 1 
     //? PARA "PASAR A LA SIG SUBPÁGINA"
-    const dateSetter = getFixedDateSetter(innerDateSetter, pageIndexSetter);
+    const dateSetter = getFixedDateSetter(innerCotiValExtaSetter, pageIndexSetter);
+
 
     const pageOptions: IPageOptions = {
         0: <CalendarFrame dateSetter={dateSetter}/>,
-        1: <></>
+        1: <ClienteFrame clienteDataSetter={innerClienteDataSetter}/>,
+        2: <ServiciosSolicitadosFrame parentServiciosSolicitadosArr={innerServiciosSolicitadosArr} parentServSolicitadosArrSetter={innerServSolicitadosArrSetter}/>
     }
 
     const selectedContent = pageOptions[pageIndex];
@@ -45,3 +61,5 @@ export function getPageContent(settersArr: settersArrTypes): JSX.Element {
     }
     return selectedContent;
 }
+
+

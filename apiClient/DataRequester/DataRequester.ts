@@ -1,6 +1,7 @@
 import { 
     IServicioData, IProviderData, IRawProviderData,
-    IServicioBodyRequestFormat, IModificarServicioDataEnviar
+    IServicioBodyRequestFormat, IModificarServicioDataEnviar, 
+    IClienteRutForAutocomplete, IClienteRut
 } from "models";
 
 
@@ -38,6 +39,30 @@ export class DataRequester {
         }
     }
 
+    public static async getListaRutsForAutocomplete(): Promise<IClienteRutForAutocomplete[]> {
+        const urlToFetch = `${DataRequester.baseServerURL}/clientes/`;
+        try {
+            const fetchedData: IClienteRut[] = await fetch(urlToFetch).then(data => data.json());            
+            const listToReturn:IClienteRutForAutocomplete[] = [];
+            fetchedData.forEach((item) => {listToReturn.push({value:item.rut})});
+            return listToReturn;
+        }
+        catch {
+            return [];
+        }
+    }
+
+    public static async getListaRuts(): Promise<IClienteRut[]> {
+        const urlToFetch = `${DataRequester.baseServerURL}/clientes/`;
+        try {
+            const fetchedData: IClienteRut[] = await fetch(urlToFetch).then(data => data.json());
+            return fetchedData;
+        }
+        catch {
+            return [];
+        }
+    }
+
     public static async getListaServicios(): Promise<IServicioData[]> {
         const urlToFetch = `${DataRequester.baseServerURL}/servicios`;
         try {
@@ -64,6 +89,7 @@ export class DataRequester {
         if (typeof fetchedData === 'string') {
             return fetchedData;
         }
+        console.log(fetchedData);
         return 'ERROR EN LA PETICIÓN DE AGREGAR SERVICIO';
     }
 
@@ -71,36 +97,40 @@ export class DataRequester {
     public static async modificarServicioGuardado(serviciosToSend: IModificarServicioDataEnviar) {
         // const JWToken = window.localStorage.getItem("JWToken");
         const postConfig = { 
-            method: 'patch',
+            //? this should be: method: 'patch',  (backend problems)
+            method: 'post',
             body: JSON.stringify(serviciosToSend),
             headers: { 
                 'Content-Type': 'application/json',
                 // 'authorization': JWToken
             }
         };
-        const urlToFetch = `${DataRequester.baseServerURL}/servicios/crear`;
+        const urlToFetch = `${DataRequester.baseServerURL}/servicios/modificar`;
         const fetchedData: unknown = await fetch(urlToFetch, postConfig).then(data => data.json()).catch(err => err);
         if (typeof fetchedData === 'string') {
             return fetchedData;
         }
+        console.log(fetchedData);
         return 'ERROR EN LA PETICIÓN DE MODIFICAR SERVICIO';
     }
 
     public static async borrarServicioGuardado(servicioToSend: IServicioBodyRequestFormat) {
         // const JWToken = window.localStorage.getItem("JWToken");
         const postConfig = { 
-            method: 'delete',
+            //? this should be: method: 'delete',  (backend problems)
+            method: 'post',
             body: JSON.stringify(servicioToSend),
             headers: { 
                 'Content-Type': 'application/json',
                 // 'authorization': JWToken
             }
         };
-        const urlToFetch = `${DataRequester.baseServerURL}/servicios/crear`;
+        const urlToFetch = `${DataRequester.baseServerURL}/servicios/borrar`;
         const fetchedData: string = await fetch(urlToFetch, postConfig).then(data => data.json()).catch(err => err);
         if (typeof fetchedData === 'string') {
             return fetchedData;
         }
+        console.log(fetchedData);
         return 'ERROR EN LA PETICIÓN DE ELIMINAR SERVICIO';
     }
 }

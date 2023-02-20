@@ -1,4 +1,4 @@
-export interface IAutocompleteInputProps {
+export interface IAutocompleteSelectProps {
     dataListID: string;
     cssClasses: string;
     optionsList: string[];

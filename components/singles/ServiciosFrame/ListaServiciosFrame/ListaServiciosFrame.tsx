@@ -9,8 +9,9 @@ export const ListaServiciosFrame: FC<IListaServGuardadosFrameProps> = ({servicio
         const innerListaElementos = serviciosGuardados.map((servicio, index) => {
             return (
                 <section key={`serviAlfa_${index}`} className={styles['servicio-row-container']}>
-                    <h3>{servicio}</h3>
-                    {/* <h3>{servicio + "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}</h3> */}
+                    <h3>{servicio.descripcion}</h3>
+                    <h3>${servicio.valor_unitario} c/u</h3>
+                    {/* <h3>{servicio.descripcion + "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}</h3> */}
                 </section>
             )
         })

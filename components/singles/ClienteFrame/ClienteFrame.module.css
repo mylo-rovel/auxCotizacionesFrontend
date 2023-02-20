@@ -1,0 +1,44 @@
+.cliente-main-container {
+    width: 40vw;
+    height: 30vw;
+    overflow-y: scroll;
+    margin: 0 auto;
+    margin-top: 1rem;
+    padding: 0.45rem 0.55rem;
+    
+    border: solid black 1px;
+    border-radius: 5px;
+    
+    --font-size-to-use: 1.35rem;
+    font-size: var(--font-size-to-use);
+}
+
+.autocomplete-limited-container,
+.cliente-input-row {
+    width: 25vw;
+}
+
+.rut-input-box {
+    font-size: var(--font-size-to-use);
+    border-radius: 10px;
+    padding-left: 0.25rem;
+    font-weight: bolder;
+}
+
+.cliente-rut-input-row label:last-child {
+    margin-left: 0.55rem;
+    font-size: var(--font-size-to-use);
+    font-weight: bolder;    
+}
+
+
+
+
+.cliente-input-row {
+    margin-top: 0.5rem;
+}
+
+.cliente-input-row input{
+    width: 98%;
+    border: solid black 2px;
+}
