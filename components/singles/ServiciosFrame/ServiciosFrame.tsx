@@ -3,7 +3,7 @@ import { FC, useEffect, useRef, useState } from 'react';
 import { DataRequester } from "apiClient";
 import { getServiciosIDCollection } from 'utils';
 import styles from "./ServiciosFrame.module.css";
-import { PortalContainer, FancyButton } from 'components/singles';
+import { PortaledModal } from 'components/singles';
 import { ListaServiciosFrame } from "./ListaServiciosFrame/ListaServiciosFrame";
 import { MainServiciosFrame } from "./MainServiciosFrame/MainServiciosFrame";
 import { ModifyServicioFrame } from "./ModifyServicioFrame/ModifyServicioFrame";
@@ -39,8 +39,6 @@ export const ServiciosFrame: FC<IServiciosFrameProps> = () => {
     
     const displayModalButtonFn = () => {
         if (document) {
-            // setServicioBuscado('');
-            // setPrecioServicio(0);            
             setDisplayModal(false);
             document.location.reload();
         }
@@ -49,14 +47,9 @@ export const ServiciosFrame: FC<IServiciosFrameProps> = () => {
     return <>
         {(displayModal) ? 
         <>
-            <PortalContainer>
-                <article className={styles['resultado-peticion-container']}>
-                    <h1>{resultadoPeticion}</h1>
-                    <section>
-                        <FancyButton textToDisplay='CERRAR' onClickFn={displayModalButtonFn}/>
-                    </section>
-                </article>
-            </PortalContainer>
+            <PortaledModal buttonText='CERRAR' buttonFn={displayModalButtonFn}>
+                <h1>{resultadoPeticion}</h1>
+            </PortaledModal>
         </> : null}
 
         {/* <article style={{marginTop: ((resultadoPeticion === '') ? '3.3rem' : '0') }}> */}

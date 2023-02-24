@@ -1,8 +1,9 @@
 import { 
     IServicioData, IProviderData, IRawProviderData,
     IServicioBodyRequestFormat, IModificarServicioDataEnviar, 
-    IClienteRutForAutocomplete, IClienteRut
+    IGeneralRequestResult, IClienteRut, IInputClienteDataEnviar, ICotizacionEnviar
 } from "models";
+import { getEmptyClienteData } from "utils";
 
 
 export class DataRequester {
@@ -32,23 +33,10 @@ export class DataRequester {
             objToReturn.Ciudad = fetchedData.ciudad;
         }
         catch {
-            console.log("DataRequester getProviderData error")
+            // console.log("DataRequester getProviderData error")
         }
         finally {
             return objToReturn
-        }
-    }
-
-    public static async getListaRutsForAutocomplete(): Promise<IClienteRutForAutocomplete[]> {
-        const urlToFetch = `${DataRequester.baseServerURL}/clientes/`;
-        try {
-            const fetchedData: IClienteRut[] = await fetch(urlToFetch).then(data => data.json());            
-            const listToReturn:IClienteRutForAutocomplete[] = [];
-            fetchedData.forEach((item) => {listToReturn.push({value:item.rut})});
-            return listToReturn;
-        }
-        catch {
-            return [];
         }
     }
 
@@ -63,6 +51,17 @@ export class DataRequester {
         }
     }
 
+    public static async getDatosClientePorRut(rutToFetch: string): Promise<IInputClienteDataEnviar> {
+        const urlToFetch = `${DataRequester.baseServerURL}/clientes/${rutToFetch}`;
+        try {
+            const fetchedData: IInputClienteDataEnviar = await fetch(urlToFetch).then(data => data.json());            
+            return fetchedData;
+        }
+        catch {
+            return getEmptyClienteData();
+        }
+    }
+
     public static async getListaServicios(): Promise<IServicioData[]> {
         const urlToFetch = `${DataRequester.baseServerURL}/servicios`;
         try {
@@ -74,7 +73,7 @@ export class DataRequester {
         }
     }
 
-    public static async agregarServicioNuevo(servicioToSend: IServicioBodyRequestFormat) {
+    public static async agregarServicioNuevo(servicioToSend: IServicioBodyRequestFormat): Promise<IGeneralRequestResult> {
         // const JWToken = window.localStorage.getItem("JWToken");
         const postConfig = { 
             method: 'post',
@@ -87,14 +86,23 @@ export class DataRequester {
         const urlToFetch = `${DataRequester.baseServerURL}/servicios/crear`;
         const fetchedData: string = await fetch(urlToFetch, postConfig).then(data => data.json()).catch(err => err);
         if (typeof fetchedData === 'string') {
-            return fetchedData;
+            // return fetchedData;
+            return {
+                operationResultStr: fetchedData,
+                operationWasSuccess: true,
+                payload: ''
+            };
         }
-        console.log(fetchedData);
-        return 'ERROR EN LA PETICIÓN DE AGREGAR SERVICIO';
+        // return 'ERROR EN LA PETICIÓN DE AGREGAR SERVICIO';
+        return {
+            operationResultStr: 'ERROR EN LA PETICIÓN DE AGREGAR SERVICIO',
+            operationWasSuccess: false,
+            payload: ''
+        };
     }
 
 
-    public static async modificarServicioGuardado(serviciosToSend: IModificarServicioDataEnviar) {
+    public static async modificarServicioGuardado(serviciosToSend: IModificarServicioDataEnviar): Promise<IGeneralRequestResult> {
         // const JWToken = window.localStorage.getItem("JWToken");
         const postConfig = { 
             //? this should be: method: 'patch',  (backend problems)
@@ -108,13 +116,22 @@ export class DataRequester {
         const urlToFetch = `${DataRequester.baseServerURL}/servicios/modificar`;
         const fetchedData: unknown = await fetch(urlToFetch, postConfig).then(data => data.json()).catch(err => err);
         if (typeof fetchedData === 'string') {
-            return fetchedData;
+            // return fetchedData;
+            return {
+                operationResultStr: fetchedData,
+                operationWasSuccess: true,
+                payload: ''
+            };
         }
-        console.log(fetchedData);
-        return 'ERROR EN LA PETICIÓN DE MODIFICAR SERVICIO';
+        // return 'ERROR EN LA PETICIÓN DE MODIFICAR SERVICIO';
+        return {
+            operationResultStr: 'ERROR EN LA PETICIÓN DE MODIFICAR SERVICIO',
+            operationWasSuccess: false,
+            payload: ''
+        };
     }
 
-    public static async borrarServicioGuardado(servicioToSend: IServicioBodyRequestFormat) {
+    public static async borrarServicioGuardado(servicioToSend: IServicioBodyRequestFormat): Promise<IGeneralRequestResult> {
         // const JWToken = window.localStorage.getItem("JWToken");
         const postConfig = { 
             //? this should be: method: 'delete',  (backend problems)
@@ -128,9 +145,45 @@ export class DataRequester {
         const urlToFetch = `${DataRequester.baseServerURL}/servicios/borrar`;
         const fetchedData: string = await fetch(urlToFetch, postConfig).then(data => data.json()).catch(err => err);
         if (typeof fetchedData === 'string') {
-            return fetchedData;
+            // return fetchedData;
+            return {
+                operationResultStr: fetchedData,
+                operationWasSuccess: true,
+                payload: ''
+            };
         }
-        console.log(fetchedData);
-        return 'ERROR EN LA PETICIÓN DE ELIMINAR SERVICIO';
+        // return 'ERROR EN LA PETICIÓN DE ELIMINAR SERVICIO';
+        return {
+            operationResultStr: 'ERROR EN LA PETICIÓN DE ELIMINAR SERVICIO',
+            operationWasSuccess: false,
+            payload: ''
+        };
+    }
+
+    public static async enviarDatosCotizacion(ensambledObjToSend: ICotizacionEnviar): Promise<IGeneralRequestResult> {
+        const urlToFetch = `${DataRequester.baseServerURL}/cotizaciones/registrar`;
+        const postConfig = { 
+            method: 'post',
+            body: JSON.stringify(ensambledObjToSend),
+            headers: { 
+                'Content-Type': 'application/json',
+                // 'authorization': JWToken
+            }
+        };
+        const fetchedData: string = await fetch(urlToFetch, postConfig).then(data => data.json()).catch(err => err);
+        if (typeof fetchedData === 'string') {
+            // return fetchedData;
+            return {
+                operationResultStr: fetchedData,
+                operationWasSuccess: true,
+                payload: ''
+            };
+        }
+        // return 'ERROR AL GUARDAR LA COTIZACIÓN';
+        return {
+            operationResultStr: 'ERROR AL GUARDAR LA COTIZACIÓN',
+            operationWasSuccess: false,
+            payload: ''
+        };
     }
 }

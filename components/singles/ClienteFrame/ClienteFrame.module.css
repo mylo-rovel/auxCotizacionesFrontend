@@ -1,7 +1,8 @@
 .cliente-main-container {
-    width: 40vw;
-    height: 30vw;
+    width: 41vw;
+    height: 25vw;
     overflow-y: scroll;
+
     margin: 0 auto;
     margin-top: 1rem;
     padding: 0.45rem 0.55rem;
@@ -13,9 +14,29 @@
     font-size: var(--font-size-to-use);
 }
 
+
+.cliente-main-container-header {
+    display: flex;
+    justify-content: space-between;
+}
+.cliente-main-container-header *{
+    display: grid;
+    place-self: center;
+}
+
+
 .autocomplete-limited-container,
 .cliente-input-row {
     width: 25vw;
+}
+
+.cliente-input-row {
+    border-top: solid black 1px;
+    margin-top: 0.5rem;
+}
+.cliente-input-row input{
+    width: 98%;
+    border: solid black 2px;
 }
 
 .rut-input-box {
@@ -25,20 +46,41 @@
     font-weight: bolder;
 }
 
-.cliente-rut-input-row label:last-child {
+
+/** FILA DEL RUT */
+.cliente-rut-input-row {
+    display: flex;
+}
+.cliente-rut-input-left-section {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+.cliente-rut-input-left-element {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0.2rem 0;
+
     margin-left: 0.55rem;
     font-size: var(--font-size-to-use);
+    font-weight: bolder;
+}
+.cliente-rut-input-button{
+    font-size: 1.1rem;
+    height: fit-content;
+    background-color: transparent;
+    border: solid black 1px;
+    border-left: 0;
+    border-right: 0;
+
+    line-height: 2rem;
+    transition: all 0.2s linear;
+
+    cursor: pointer;
+}
+
+.cliente-rut-input-button:hover {
+    line-height: 1.5rem;
     font-weight: bolder;    
-}
-
-
-
-
-.cliente-input-row {
-    margin-top: 0.5rem;
-}
-
-.cliente-input-row input{
-    width: 98%;
-    border: solid black 2px;
 }

@@ -1,7 +1,8 @@
 import { NextRouter } from "next/router";
 import { Dispatch, SetStateAction } from "react";
 
-import { IServicioData, IServicioIDData, IValoresExtraCotizacion } from "models";
+import { maximumLenghts } from 'utils';
+import { IServicioData, IServicioIDData, IValoresExtraCotizacion, calendarFrameToUse } from "models";
 
 
 export const splitAndJoinStr = (inputStr: string, splitStr: string, joinStr: string) => {
@@ -28,23 +29,34 @@ export const getValidDateString = (dateObj: Date) => {
     return `${dateDay}-${dateMonth}-${dateYear}`;
 }
 
-export const getFixedDateSetter = (innerCotiValExtaSetter: Dispatch<SetStateAction<IValoresExtraCotizacion>>, pageIndexSetter: Dispatch<SetStateAction<number>>) => {        
+export const getFixedDateSetter = (innerCotiValExtaSetter: Dispatch<SetStateAction<IValoresExtraCotizacion>>, frameToUse: calendarFrameToUse) => {        
     return (newDate: Date) => {
-        innerCotiValExtaSetter((prevState) => {
-            return {
-                ...prevState,
-                fechaCotizacion: getValidDateString(newDate)
-            }
-        })
-        pageIndexSetter(1);
+        if (frameToUse === 'fecha de cotización') {
+            innerCotiValExtaSetter((prevState) => {
+                return {
+                    ...prevState,
+                    fechaCotizacion: getValidDateString(newDate)
+                }
+            })            
+            return;
+        }
+        // if (frameToUse === 'fecha de validez de la cotización') {
+        else {
+            innerCotiValExtaSetter((prevState) => {
+                return {
+                    ...prevState,                    
+                    fechaValidezCoti: getValidDateString(newDate)
+                }
+            })
+            return;
+        }
     };
 }
 
 export const testIfRutIsValid = (rutStr: string): boolean => {
     const regex = /^[\d]{8}(-)[\dkK]$/;
-    // const rutToUse = "12345678-k".toUpperCase();
     const rutToUse = rutStr.toUpperCase();        
-    return (regex.test(rutToUse) && (rutToUse.length === 10));
+    return (regex.test(rutToUse) && (rutToUse.length === maximumLenghts.maxRutLength));
 }
 
 

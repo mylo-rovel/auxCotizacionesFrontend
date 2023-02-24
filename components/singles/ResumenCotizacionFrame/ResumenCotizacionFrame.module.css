@@ -1,0 +1,75 @@
+.resumen-cotizacion-main-container {
+    font-size: 1.45rem;
+
+    height: fit-content;
+    max-height: 50vh;
+    overflow-y: scroll;
+    
+    max-width: 60vw;
+    width: 60vw;
+    margin: 0 auto;
+
+    margin-top: 2rem;
+    border: solid black 1px;
+    border-radius: 5px;
+    padding: 0.5rem;
+}
+
+
+.resumen-cotizacion-header-container .resumen-header-values{
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    
+    overflow: scroll;
+}
+
+.resumen-cliente-container,
+.resumen-serviciossolicitados-container {
+    border-top: solid black 1px;
+    padding-top: 0.25rem;
+    margin: 0.5rem 0;
+}
+
+
+
+.resumen-cliente-container-values {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    justify-content: space-around;
+    
+    overflow: scroll;
+}
+
+
+
+.final-send-data-button-container {
+    width: fit-content;
+    margin: 0 auto;
+    margin-top: 1rem;
+}
+
+.final-send-data-button  {
+    font-size: 1.25rem;
+    font-weight: bolder;
+    font-weight: initial;
+    letter-spacing: 3px;
+    padding: 0.75rem 0.55rem;
+    background-color: transparent;
+    border: 0;
+    border-top: solid rgb(230, 230, 230) 1px;
+    border-bottom: solid rgb(230, 230, 230) 1px;
+    transition: all 0.4s;
+}
+
+.final-send-data-button:hover {
+    background-color: transparent;
+    opacity: 1;
+    font-weight: bolder;
+    border-color: black;
+    letter-spacing: 2px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    cursor: pointer;
+}

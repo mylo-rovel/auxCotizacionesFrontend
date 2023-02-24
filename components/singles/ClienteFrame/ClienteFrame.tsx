@@ -1,63 +1,165 @@
 import { AutoComplete } from 'antd';
-import { ChangeEvent, FC, useRef, useState, useEffect, MutableRefObject, SetStateAction, Dispatch } from 'react';
-
+import { ChangeEvent, FC, useState, useEffect, SetStateAction, Dispatch } from 'react';
 
 import { DataRequester } from 'apiClient';
 import styles from "./ClienteFrame.module.css";
-import { getEmptyCotiValoresExtra, testIfRutIsValid } from "utils";
-import { IClienteFrameProps, IValoresExtraCotizacion, IInputClienteDataEnviar, IClienteRutForAutocomplete } from "models";
+import { maximumLenghts, ultimoRutManagerObj } from "utils";
+import { getEmptyCotiValoresExtra, getEmptyClienteData, testIfRutIsValid } from "utils";
+import { update_CotiValoresObj_Value, updateCotizacionValoresExtra } from './ClienteFrameAux';
+import { IClienteFrameProps, IValoresExtraCotizacion, IInputClienteDataEnviar, IClienteRutForAutocomplete, IClienteRut, IClienteIDPorRut } from "models";
 
+export interface IValoresExtraYCliente extends IValoresExtraCotizacion, IInputClienteDataEnviar {}
 
-export const ClienteFrame: FC<IClienteFrameProps> = ({clienteDataSetter}) => {
-    const [listaRuts, setListaRuts] = useState<IClienteRutForAutocomplete[]>([]);
+const getEmptyValoresExtraYCliente = ():IValoresExtraYCliente => {
+    return {
+        ...getEmptyCotiValoresExtra(),
+        ...getEmptyClienteData()
+    }
+}
+
+export const ClienteFrame: FC<IClienteFrameProps> = ({parent_clientData, parent_clienteDataSetter, parent_cotiValExtaSetter, fechaCotizacion, parent_formaPago}) => {
+    const [listaRuts_ID, setListaRuts_ID] = useState<IClienteRut[]>([]);
+    
+    const [listaRutsAutocomplete, setListaRutsAutocomplete] = useState<IClienteRutForAutocomplete[]>([]);
+    const [diccionarioRuts_IDs, setDiccionarioRuts_IDs] = useState<IClienteIDPorRut>({});
+
     const [rutIsValid, setRutIsValid] = useState<boolean>(false);
-    const cotiValoresExtraRef = useRef<IValoresExtraCotizacion>(getEmptyCotiValoresExtra());
-    // IInputClienteDataEnviar
+    const [modificarClienteAntiguo, setModificarClienteAntiguo] = useState<boolean>(false);
+
+    const [cotizacionValoresExtra, setCotizacionValoresExtra] = useState<IValoresExtraYCliente>(getEmptyValoresExtraYCliente());
 
     useEffect(() => {
-        const fetchRutClientes = async () => {
-            const rutsClientesArr = await DataRequester.getListaRutsForAutocomplete();            
-            setListaRuts(rutsClientesArr);
-        }
-        fetchRutClientes();
-    }, [rutIsValid]);
-
-    const changeCotiValue = (cotiValoresExtraRef: MutableRefObject<IValoresExtraCotizacion>, propToModify: string) => (eObj: ChangeEvent<HTMLInputElement>) => {
-        const rawNewValue = eObj.target.value;
-        if (propToModify in cotiValoresExtraRef.current) {
-            //? IF WE GET THIS FAR, IT MEANS THAT THE PROPERTY EXISTS IN THE OBJECT
-            //? SO THERE'S NO PROBLEM IS WE USE as keyof OPERATORS
-            const proxyPropToModify = propToModify as keyof IValoresExtraCotizacion;
+        const setupMainObjectData = () => {
+            //* DADO QUE NECESITAMOS SACAR EL MOUSE DEL CUADRITO PARA CAMBIAR DE PESTAÑA
+            //* SIEMPRE GUARDAREMOS LOS DATOS            
+            setCotizacionValoresExtra((prevState) => {
+                const dummyClientDataJSON = JSON.stringify(getEmptyClienteData());
+                const parentClientDataJSON = JSON.stringify(parent_clientData);                
+                //* IF BOTH ARE EQUAL => parentClientDataJSON IS EMPTY
+                //* SO WE DONT WANT TO UPDATE OUR OBJECT
+                if (dummyClientDataJSON === parentClientDataJSON) {
+                    return prevState;
+                }
+                return {
+                    ...prevState,
+                    fechaCotizacion,
+                    nombre: parent_clientData.nombre,
+                    rut: parent_clientData.rut,
+                    email: parent_clientData.email,
+                    telefono: parent_clientData.telefono,
+                    direccion: parent_clientData.direccion,
+                    contacto: parent_clientData.contacto,
+                    formaPago: parent_formaPago
+                }
+            })            
             
         }
+        const fetchRutClientes = async () => {
+            const rutsClientesArr = await DataRequester.getListaRuts();
+            setListaRuts_ID(rutsClientesArr);
+
+            const rutsClientesAutocompleteArr: IClienteRutForAutocomplete[] = rutsClientesArr.map((clienteObj) => {
+                return { value: clienteObj.rut }
+            })
+            setListaRutsAutocomplete(rutsClientesAutocompleteArr);
+
+            const proxy_coleccionRuts_porID: IClienteIDPorRut = rutsClientesArr.reduce((accObj: IClienteIDPorRut, currCliente) => {
+                //* RUT : ID_CLIENTE
+                accObj[currCliente.rut] = currCliente.id;
+                return accObj;
+            }, {})
+            setDiccionarioRuts_IDs(proxy_coleccionRuts_porID);
+        }
+        if (listaRuts_ID.length === 0) {fetchRutClientes();}
+        
+        //* DADO QUE NECESITAMOS SACAR EL MOUSE DEL CUADRITO PARA CAMBIAR DE PESTAÑA
+        //* SIEMPRE GUARDAREMOS LOS DATOS
+        setupMainObjectData();
+    }, []);
+
+
+    //TODO: GUARDAR DATOS
+    //TODO: PREGUNTAR SI ESTÁ SEGURO DE QUE QUIERE MODIFICAR LOS DATOS
+    //TODO: (SABEMOS QUE EL CLIENTE FUE MODIFICADO POR cotizacionValoresExtra.clienteEsNuevo)
+    const saveClienteData = () => {
+        if (rutIsValid){
+            const clienteDataEnviar: IInputClienteDataEnviar = {
+                id: 1,
+                nombre: cotizacionValoresExtra.nombre,
+                rut: cotizacionValoresExtra.rut.toUpperCase(),
+                email: cotizacionValoresExtra.email,
+                telefono: cotizacionValoresExtra.telefono,
+                direccion: cotizacionValoresExtra.direccion,
+                contacto: cotizacionValoresExtra.contacto,
+                created_at: '',
+                updated_at: ''
+            };
+
+            parent_clienteDataSetter(clienteDataEnviar);
+            parent_cotiValExtaSetter((prevState) => {
+                return {
+                    ...prevState,
+                    clienteEsNuevo: cotizacionValoresExtra.clienteEsNuevo,
+                    idClienteSiEsViejo: cotizacionValoresExtra.idClienteSiEsViejo,
+                    formaPago: cotizacionValoresExtra.formaPago,
+                }
+            });
+
+            ultimoRutManagerObj.saveRutInLocalStorage(clienteDataEnviar.rut);
+        }
     }
-
-
+    
     return (
-    <>
-        <article className={styles['cliente-main-container']}>
-            <h3>Datos del cliente</h3>
-            <RutInputRow  listaRuts={listaRuts} setRutIsValid={setRutIsValid}/>
-            <ClientDataRow labelName='Nombre'    onChangeFn={() => {}} inputType='text'   disabled={rutIsValid} placeholderStr='Ingresar nombre del cliente'/>
-            <ClientDataRow labelName='email'     onChangeFn={() => {}} inputType='email'  disabled={rutIsValid} placeholderStr='Ingresar email del cliente'/>
-            <ClientDataRow labelName='Telefono'  onChangeFn={() => {}} inputType='number' disabled={rutIsValid} placeholderStr='Ingresar telefono del cliente'/>
-            <ClientDataRow labelName='Direccion' onChangeFn={() => {}} inputType='email'  disabled={rutIsValid} placeholderStr='Ingresar dirección del cliente'/>
-            <ClientDataRow labelName='Contacto'  onChangeFn={() => {}} inputType='email'  disabled={rutIsValid} placeholderStr='Ingresar contacto del cliente'/>
-            <ClientDataRow labelName='FormaPago' onChangeFn={() => {}} inputType='email'  disabled={rutIsValid} placeholderStr='Ingresar forma de pago del cliente'/>
+        <>
+        {/* {JSON.stringify(cotizacionValoresExtra)} */}
+        <article className={styles['cliente-main-container']} onMouseLeave={saveClienteData}>
+            <article className={styles['cliente-main-container-header']}>
+                <h3>Datos del cliente</h3>
+                <section>
+                    <h4>Fecha cotización: </h4>
+                    <h3>{fechaCotizacion}</h3>
+                </section>
+            </article>
+            <RutInputRow inputValueProp={cotizacionValoresExtra.rut} setModificarClienteAntiguo={setModificarClienteAntiguo} rutIsValid={rutIsValid} listaRutsAutocomplete={listaRutsAutocomplete} setRutIsValid={setRutIsValid}  diccionarioRuts_IDs={diccionarioRuts_IDs} setCotizacionValoresExtra={setCotizacionValoresExtra}/>
+            <ClientDataRow labelName='Nombre'                       onChangeFn={update_CotiValoresObj_Value(setCotizacionValoresExtra, 'nombre')}    inputValueProp={cotizacionValoresExtra.nombre}      inputType='text'   disabled={modificarClienteAntiguo && rutIsValid} placeholderStr='Ingresar nombre del cliente'       />
+            <ClientDataRow labelName='email'                        onChangeFn={update_CotiValoresObj_Value(setCotizacionValoresExtra, 'email')}     inputValueProp={cotizacionValoresExtra.email}       inputType='email'  disabled={modificarClienteAntiguo && rutIsValid} placeholderStr='Ingresar email del cliente'        />
+            <ClientDataRow labelName='Telefono (ejemplo: 912341234)'onChangeFn={update_CotiValoresObj_Value(setCotizacionValoresExtra, 'telefono')}  inputValueProp={cotizacionValoresExtra.telefono}    inputType='number' disabled={modificarClienteAntiguo && rutIsValid} placeholderStr='Ingresar telefono del cliente'     />
+            <ClientDataRow labelName='Direccion'                    onChangeFn={update_CotiValoresObj_Value(setCotizacionValoresExtra, 'direccion')} inputValueProp={cotizacionValoresExtra.direccion}   inputType='text'   disabled={modificarClienteAntiguo && rutIsValid} placeholderStr='Ingresar dirección del cliente'    />
+            <ClientDataRow labelName='Contacto'                     onChangeFn={update_CotiValoresObj_Value(setCotizacionValoresExtra, 'contacto')}  inputValueProp={cotizacionValoresExtra.contacto}    inputType='text'   disabled={modificarClienteAntiguo && rutIsValid} placeholderStr='Ingresar contacto del cliente'     />
+            <ClientDataRow labelName='FormaPago (ejemplo: efectivo)'onChangeFn={update_CotiValoresObj_Value(setCotizacionValoresExtra, 'formaPago')} inputValueProp={cotizacionValoresExtra.formaPago}   inputType='text'   disabled={modificarClienteAntiguo && rutIsValid} placeholderStr='Ingresar forma de pago del cliente'/>
         </article>
-        <button> IMPRIMIR DATOS</button>
     </>
     )
 };
 
 
+
+
 // //* ----------------- CUSTOM COMPONENTS ONLY FOR THIS FILE --------------------------
 
 
-//* ------------------------- RUT INPUT ----------------------------------------
+
+// -----------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------
+//* ------------------------- RUT INPUT ----------------------------------------------
+// -----------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------
+
 interface IRutInputRowProps {
-    listaRuts: IClienteRutForAutocomplete[];
-    setRutIsValid: Dispatch<SetStateAction<boolean>>
+    rutIsValid: boolean;
+    setRutIsValid: Dispatch<SetStateAction<boolean>>;
+    setModificarClienteAntiguo: Dispatch<SetStateAction<boolean>>;
+    
+    listaRutsAutocomplete: IClienteRutForAutocomplete[];
+    diccionarioRuts_IDs: IClienteIDPorRut;
+
+    setCotizacionValoresExtra: Dispatch<SetStateAction<IValoresExtraYCliente>>;
+
+    inputValueProp: string;
 };
 
 type rutResultClass = 'valid-rut' | 'invalid-rut' | 'empty-rut-input';
@@ -79,10 +181,16 @@ const borderColorCollection: rutResultConversion = {
 }
 
 const RutInputRow: FC<IRutInputRowProps> = (inputProps) => {
-    const [rutValue, setRutValue] = useState('');
+    const [ultimoRutIngresado, setUltimoRutIngresado] = useState<string>('');
+    const [rutValue, setRutValue] = useState<string>('');
     const [rutResultClass, setRutResultClass] = useState<rutResultClass>('empty-rut-input');
     
     useEffect(() => {
+        const setupUltimoRutGuardado = () => {
+            const ultimoRut = ultimoRutManagerObj.getUltimoRut_localStorage();
+            setUltimoRutIngresado(ultimoRut);
+        }
+
         const rutIsValid = testIfRutIsValid(rutValue);
         if (rutValue === '') { 
             setRutResultClass('empty-rut-input');
@@ -95,67 +203,158 @@ const RutInputRow: FC<IRutInputRowProps> = (inputProps) => {
         else { 
             setRutResultClass('invalid-rut');
             inputProps.setRutIsValid(false);
+        }        
+        
+        if (inputProps.inputValueProp !== '') {
+            setRutValue(inputProps.inputValueProp);
         }
+
+        setupUltimoRutGuardado();
     }, [rutValue]);
 
+    const fetchClienteDataPorRut = async (rutCliente: string) => {
+        const datosCliente = await DataRequester.getDatosClientePorRut(rutCliente);
+        updateCotizacionValoresExtra(datosCliente, inputProps.setCotizacionValoresExtra);
+    }
+    
     const innerSetRutValue = (rutValueInput: unknown) => {
         if (typeof rutValueInput === 'string') {
-            setRutValue(rutValueInput);   
-            // HERE SET THE .current VALUE OF THE REF OBJECT
-        }
-    }
+            //* NO GUARDAR RUTS DEMASIADO LARGOS
+            if (rutValueInput.length > maximumLenghts.maxRutLength) return;
+            
+            if (rutValueInput in inputProps.diccionarioRuts_IDs){
+                //* WE SET THE RUT IN THE FUNCTION updateCotizacionValoresExtra
+                fetchClienteDataPorRut(rutValueInput);                
+            }else {
+                //* IF IS NOT ALREADY SAVED RUT, JUST USE TELL THAT THE CLIENT IS NEW
+                inputProps.setCotizacionValoresExtra((prevState) => ({...prevState, 
+                    rut:rutValueInput, clienteEsNuevo:true, idClienteSiEsViejo:1
+                }));
+            };
+            setRutValue(rutValueInput);
+        };
+    };
+
+    const switchModifyClienteFlag = () => inputProps.setModificarClienteAntiguo((prevState) => !prevState);
 
     return (
     <>
-    <section className={`${styles['cliente-rut-input-row']}`}>
-        <label><h4>Rut del cliente</h4></label>
-        <AutoComplete
-            options={inputProps.listaRuts}
-            className={`${styles['autocomplete-limited-container']}`}
-            onChange={(eObj) => innerSetRutValue(eObj)}
-            >
-            <input  
-                className={`${styles['rut-input-box']}`}
-                placeholder = 'Escriba el rut del cliente'
-                type='text'
-                value={rutValue}
-                style={{borderColor:borderColorCollection[rutResultClass]}}
-            />            
-        </AutoComplete>
-        <label style={{color:borderColorCollection[rutResultClass]}}> 
-            {auxValidMessageCollection[rutResultClass]} 
-        </label>
-    </section>
+    <article className={`${styles['cliente-rut-input-row']}`}>
+        <section>
+            <label><h3>Rut del cliente</h3></label>
+            <label><h4>Ultimo rut escrito: {ultimoRutIngresado}</h4></label>
+            <AutoComplete
+                options={inputProps.listaRutsAutocomplete}
+                className={`${styles['autocomplete-limited-container']}`}
+                onChange={(eObj) => innerSetRutValue(eObj)}
+                // value={{label: rutValue}}
+                >
+                <input  
+                    className={`${styles['rut-input-box']}`}
+                    placeholder = 'Escriba el rut del cliente'
+                    type='text'
+                    value={rutValue}
+                    style={{borderColor:borderColorCollection[rutResultClass]}}
+                />
+            </AutoComplete>
+        </section>
+        
+        <section className={`${styles['cliente-rut-input-left-section']}`}>
+            <section className={`${styles['cliente-rut-input-left-element']}`}>
+                <div></div>
+                <label style={{color:borderColorCollection[rutResultClass]}}> 
+                    {auxValidMessageCollection[rutResultClass]} 
+                </label>
+            </section>
+            <section className={`${styles['cliente-rut-input-left-element']}`}>
+                <div></div>
+                {                    
+                (!inputProps.rutIsValid)
+                ?   <></>
+                :   <button className={`${styles['cliente-rut-input-button']}`} onClick={switchModifyClienteFlag}>
+                        Modificar cliente
+                    </button>
+                }
+            </section>
+        </section>
+    </article>
     </>
     );
 }
 
-
-
+// -----------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------
+//* ------------------------- EACH OTHER ROW -----------------------------------------
+// -----------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------
 
 
 interface IInputRowProps {
     disabled: boolean;
     labelName: string;
-    inputType: string;
+    inputType: 'text' | 'number' | 'email';
     placeholderStr: string;
-    // onChangeFn: (eObj: ChangeEvent<HTMLInputElement>) => void;
-    onChangeFn: () => void;
+    
+    onChangeFn: (eObj: ChangeEvent<HTMLInputElement>) => void;
+    inputValueProp: string | number;
 }
 
-const ClientDataRow: FC<IInputRowProps> = (inputProps) => {    
+const ClientDataRow: FC<IInputRowProps> = (inputProps) => {
+    const [dataRowValue, setDataRowValue] = useState<string | number>('');
+    const [rowIsDisabled, setRowIsDisabled] = useState<boolean>(true);
+
+    useEffect(() => {
+        setRowIsDisabled(!rowIsDisabled);
+        setDataRowValue(inputProps.inputValueProp);
+        // if (inputProps.inputValueProp === 0) {
+        //     setDataRowValue('');
+        // }else {
+        //     setDataRowValue(inputProps.inputValueProp);
+        // }
+    // },[inputProps.inputValueProp]);
+    },[inputProps.disabled, inputProps.inputValueProp])
+
+    
+    const changeInputBoxValue = (eObj: ChangeEvent<HTMLInputElement>) => {        
+        const rawInputValue = eObj.target.value;
+        if (inputProps.inputType === 'number') {
+            const numberedProp = Number(rawInputValue);
+            if ((numberedProp >= 0) && (rawInputValue.length <= maximumLenghts.maxTelefonoLength)) {
+                setDataRowValue(numberedProp);
+                inputProps.onChangeFn(eObj);
+            }
+        }else {            
+            setDataRowValue(rawInputValue);
+            inputProps.onChangeFn(eObj);
+        }
+    }
+
+    const placeholderValue = (inputProps.disabled) ? 'Escribir' : 'RUT no válido';
+
     return (
     <>
     <section className={`${styles['cliente-input-row']}`}>
         <label><h4>{inputProps.labelName}</h4></label>
-        <input 
-            className={`${styles['rut-input-box']}`}
-            placeholder = {(inputProps.disabled) ? inputProps.placeholderStr : 'RUT no válido'}
-            type={inputProps.inputType}
-            // onChange={(eObj) => inputProps.onChangeFn(eObj)}
-            onChange={(eObj) => inputProps.onChangeFn()}
-            disabled = {!inputProps.disabled}
-        />
+        {
+        (!inputProps.disabled) 
+        ?   <h4>{dataRowValue}</h4> 
+        :   <input 
+                className={`${styles['rut-input-box']}`}
+                placeholder = {placeholderValue}
+                type={inputProps.inputType}
+                onChange={changeInputBoxValue}
+                disabled = {!inputProps.disabled}
+                // disabled={rowIsDisabled}
+                required
+                value={dataRowValue}
+            />
+        }
     </section>
     </>
     );

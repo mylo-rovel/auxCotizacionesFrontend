@@ -1,0 +1,56 @@
+.summary-servicios-solicitados-container {
+    /* max-height: 15vh; */
+    width: 100%;
+    margin: 0 auto;
+    overflow-y: scroll;
+    margin-top: 0.25rem;
+    /* padding: 0.45rem 0.55rem; */
+
+    /* border: solid black 1px; */
+    /* border-radius: 5px; */
+    
+    --font-size-to-use: 1.35rem;
+    font-size: var(--font-size-to-use);
+
+    --base-column-width: 20%;
+}
+
+.custom-table-row {
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+}
+.custom-table-row section h4{
+    font-weight: bolder;
+}
+
+.custom-table-row-header {
+    background-color: rgb(192, 192, 192);
+}
+.custom-table-row-header section h4{
+    width: fit-content;
+    margin: 0 auto;
+}
+
+
+
+
+/** ESTILANDO LAS COLUMNAS */
+.custom-table-column-codigo,
+.custom-table-column-descripcion,
+.custom-table-column-cantidad,
+.custom-table-column-valor {
+    border: solid black 1px;
+    flex:0.25;
+    width: 100%;
+    overflow-x: scroll;
+    padding: 0 0.25rem;
+}
+
+/** DEJANDO ALGUNOS VALORES EN EL CENTRO */
+.custom-column-codigo-value h4,
+.custom-column-cantidad-value h4{
+    width: fit-content;
+    margin: 0 auto;
+}
+

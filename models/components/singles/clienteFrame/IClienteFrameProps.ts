@@ -1,7 +1,11 @@
 import { Dispatch, SetStateAction } from "react";
 
-import { IInputClienteDataEnviar } from "models";
+import { IInputClienteDataEnviar, IValoresExtraCotizacion } from "models";
 
 export interface IClienteFrameProps {
-    clienteDataSetter: Dispatch<SetStateAction<IInputClienteDataEnviar>>
+    parent_clienteDataSetter: Dispatch<SetStateAction<IInputClienteDataEnviar>>;
+    parent_cotiValExtaSetter: Dispatch<SetStateAction<IValoresExtraCotizacion>>;
+    parent_clientData: IInputClienteDataEnviar;
+    fechaCotizacion: string;
+    parent_formaPago: string;
 }

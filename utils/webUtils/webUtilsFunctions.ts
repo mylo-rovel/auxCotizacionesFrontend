@@ -1,12 +1,12 @@
 import { DataRequester } from "apiClient";
+
 import { 
     IServicioBodyRequestFormat, IModificarServicioDataEnviar, IServicioDataToSend,
     ICotizacionEnviar, IServicioSolicitado, IInputClienteDataEnviar,
     IValoresExtraCotizacion, IServicioData
 } from "models";
-
-// const milisecondsAfterReset = 5000*1000;
-// const reloadAfterAWhile = () => setTimeout(() => window.location.reload(), milisecondsAfterReset);
+import { Dispatch, SetStateAction } from "react";
+import { maximumLenghts } from "utils";
 
 export const enviarDatosServicio = async (dataToSend: IServicioDataToSend) => {
     const {
@@ -21,21 +21,21 @@ export const enviarDatosServicio = async (dataToSend: IServicioDataToSend) => {
 
     switch (modoInterfaz) {
         case "AGREGAR":
-            //? CHEQUEAR SI LOS DATOS A ENVIAR SON VÁLIDOS
+            //? CHEQUEAR SI ALGUNO DE LOS DATOS A ENVIAR SON INVÁLIDOS
             if ((servicioBuscado === '') || (precioServicio < 1) || (`${precioServicio}`.length > 9 )){
                 console.log("Error. AGREGAR", servicioBuscado, precioServicio);
                 setResultadoPeticion('DATOS ENTREGADOS NO VÁLIDOS PARA AGREGAR EL SERVICIO');
                 setDisplayModal(true);
             }
             else {
-                resultadoPeticion = await DataRequester.agregarServicioNuevo(reqBodyToSend);
-                setResultadoPeticion(resultadoPeticion);
+                const {operationResultStr} = await DataRequester.agregarServicioNuevo(reqBodyToSend);
+                setResultadoPeticion(operationResultStr);
                 setDisplayModal(true);
             }
             return;
         //* --------------------------------------------------------
         case "MODIFICAR":
-            //? CHEQUEAR SI LOS DATOS A ENVIAR SON VÁLIDOS
+            //? CHEQUEAR SI ALGUNO DE LOS DATOS A ENVIAR SON INVÁLIDOS
             if (!(servicioBuscado in coleccionServicios) || (`${servicioModificadoData.nuevoPrecio}`.length > 9 )){
                 console.log("Error. MODIFICAR", servicioBuscado, coleccionServicios);
                 setResultadoPeticion('DATOS ENTREGADOS NO VÁLIDOS PARA MODIFICAR EL SERVICIO');
@@ -53,14 +53,14 @@ export const enviarDatosServicio = async (dataToSend: IServicioDataToSend) => {
                     }
                 }
     
-                resultadoPeticion = await DataRequester.modificarServicioGuardado(rebBodyToSend_Modify);
-                setResultadoPeticion(resultadoPeticion);
+                const {operationResultStr} = await DataRequester.modificarServicioGuardado(rebBodyToSend_Modify);
+                setResultadoPeticion(operationResultStr);
                 setDisplayModal(true);
             }
             return;
         
         case "ELIMINAR":
-            //? CHEQUEAR SI LOS DATOS A ENVIAR SON VÁLIDOS
+            //? CHEQUEAR SI ALGUNO DE LOS DATOS A ENVIAR SON INVÁLIDOS
             if (!(servicioBuscado in coleccionServicios)){
                 console.log("Error. ELIMINAR", servicioBuscado, coleccionServicios);
                 console.log(servicioBuscado, coleccionServicios);
@@ -68,8 +68,8 @@ export const enviarDatosServicio = async (dataToSend: IServicioDataToSend) => {
                 setDisplayModal(true);
             }
             else {
-                resultadoPeticion = await DataRequester.borrarServicioGuardado(reqBodyToSend);
-                setResultadoPeticion(resultadoPeticion);
+                const {operationResultStr} = await DataRequester.borrarServicioGuardado(reqBodyToSend);
+                setResultadoPeticion(operationResultStr);
                 setDisplayModal(true);
             }
             return;
@@ -112,6 +112,7 @@ export const getEmptyCotiValoresExtra = (): IValoresExtraCotizacion => {
 
 export const getEmptyClienteData = (): IInputClienteDataEnviar => {
     return {
+        id: 0,
         nombre: '',
         rut: '',
         email: '',
@@ -144,10 +145,113 @@ export const getDummyServicioSolicitadoArr = (arrLength: number): IServicioSolic
 
 export const getEmptyServicioDataObj = (): IServicioData => {
     return {
-        id: 0,
+        id: -1,
         descripcion: '',
         valor_unitario: 0,
         created_at: '',
         updated_at: '',
     }
 };
+
+
+//* --------------------------------------------------------------------------------------
+//* --------------------------------------------------------------------------------------
+//* --------------------------------------------------------------------------------------
+//* --------------------------------------------------------------------------------------
+
+const checkClienteData = (clienteData: IInputClienteDataEnviar, formaPago: string): boolean => {
+    //* TELEFONO NO MUY LARGO
+    if (`${clienteData.telefono}`.length > 9) return false;
+    
+    //* EMAIL CORRECTO
+    const regex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g;
+    if (!(regex.test(clienteData.rut))) return false;
+
+    return (
+        (clienteData.nombre !== '') &&
+        (clienteData.rut !== '') &&
+        (clienteData.email !== '') &&
+        (clienteData.telefono > 0) &&
+        (clienteData.direccion !== '') &&
+        (formaPago !== '')
+    );
+}
+
+const checkServiciosSolicitados = (serviciosSolicitados: IServicioSolicitado[]): boolean => {
+    return (
+        serviciosSolicitados.every((servicioItem) => {
+            const id = servicioItem.id;
+            const codigo = servicioItem.codigo;
+            const cantidad = servicioItem.cantidad;
+            return (
+                (id > -1) &&
+                (codigo !== '') &&
+                (cantidad > 0)
+            )
+        })
+    );
+}
+
+export const enviarDatosCotizacion = async (ensambledObjToSend: ICotizacionEnviar, setResultadoOperacionStr: Dispatch<SetStateAction<string>>, setDisplayModal: Dispatch<SetStateAction<boolean>>, setOperacionFueExitosa: Dispatch<SetStateAction<boolean>>) => {
+    // const clienteDataIsValid = checkClienteData(clienteData, formaPago);
+    // const serviciosSolicitadosAreValid = checkServiciosSolicitados(serviciosSolicitados);
+    // const dataEnviarAreValid = clienteDataIsValid && serviciosSolicitadosAreValid;
+    const {formaPago, clienteData, serviciosSolicitados} = ensambledObjToSend;
+
+    const clienteDataIsValid = (
+        (clienteData.nombre !== '') &&
+        (clienteData.rut !== '') &&
+        (clienteData.email !== '') &&
+        (clienteData.telefono > 0) &&
+        (clienteData.direccion !== '') &&
+        (formaPago !== '')
+    );
+    if (!(clienteDataIsValid)) {
+        setResultadoOperacionStr('ERROR. ALGUNOS VALORES DEL CLIENTE ESTÁN VACÍOS');
+        setOperacionFueExitosa(false);
+        setDisplayModal(true);
+        return 'ERROR. ALGUNOS VALORES DEL CLIENTE ESTÁN VACÍOS';
+    }
+
+    //* CHEQUEAR QUE EL TELEFONO NO ES MUY LARGO
+    if (`${clienteData.telefono}`.length > maximumLenghts.maxTelefonoLength) {
+        setResultadoOperacionStr('ERROR. VALOR TELEFONO MUY LARGO');
+        setOperacionFueExitosa(false);
+        setDisplayModal(true);
+        return 'ERROR. VALOR TELEFONO MUY LARGO';
+    }
+    //* --------------------------------------------------------------------------------
+
+
+    //* CHEQUEAR QUE EL EMAIL ES CORRECTO
+    const regex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g;
+    if (!(regex.test(clienteData.email))) {
+        setResultadoOperacionStr('ERROR. EMAIL INVÁLIDO');
+        setOperacionFueExitosa(false);
+        setDisplayModal(true);
+        return 'ERROR. EMAIL INVÁLIDO';
+    }
+    //* --------------------------------------------------------------------------------
+
+
+    //* CHEQUEAR QUE NO HAY FILAS DE SERVICIOS VACIAS
+    const allServiciosAreValid = serviciosSolicitados.every((servicioItem) => {
+        const id = servicioItem.id;
+        const codigo = servicioItem.codigo;
+        const cantidad = servicioItem.cantidad;
+        return ((id > -1) && (codigo !== '') && (cantidad > 0))
+    })
+    if (!allServiciosAreValid) {
+        setResultadoOperacionStr('ERROR. FILAS DE SERVICIOS SOLICITADOS VACÍAS');
+        setOperacionFueExitosa(false);
+        setDisplayModal(true);
+        return 'ERROR. FILAS DE SERVICIOS SOLICITADOS VACÍAS';
+    }
+    //* --------------------------------------------------------------------------------
+
+    const {operationResultStr, operationWasSuccess} = await DataRequester.enviarDatosCotizacion(ensambledObjToSend);
+    setResultadoOperacionStr(operationResultStr);
+    setOperacionFueExitosa(operationWasSuccess);
+    setDisplayModal(true);
+    return operationResultStr;
+}

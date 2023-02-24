@@ -108,8 +108,9 @@
     font-weight: bolder;
     font-size: 1.4rem;
 }
-.servicio-solicitado-row-autocomplete div {
-    border: 0;
+.servicio-solicitado-row-autocomplete input[type='text'] {
+    /* border: 0; */
+    font-weight: lighter;
 }
 
 

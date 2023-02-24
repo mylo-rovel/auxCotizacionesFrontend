@@ -2,8 +2,8 @@ import { Dispatch, SetStateAction } from 'react';
 
 import { getFixedDateSetter } from 'utils';
 import styles from "./registrar_servicios.module.css";
-import { CalendarFrame, ClienteFrame, ServiciosSolicitadosFrame } from 'components/singles';
-import { IInputClienteDataEnviar, IServicioSolicitado, IValoresExtraCotizacion } from 'models';
+import { ICotizacionEnviar, IInputClienteDataEnviar, IServicioSolicitado, IValoresExtraCotizacion } from 'models';
+import { CalendarFrame, ClienteFrame, ResumenCotizacionFrame, ServiciosSolicitadosFrame } from 'components/singles';
 
 
 export function handleIndexChange(prevState:number, variation:number, maxIndex:number) {
@@ -14,7 +14,7 @@ export function handleIndexChange(prevState:number, variation:number, maxIndex:n
 
 
 // ? THIS IS THE COLLECTION OF SETTERS WE GET FROM React.useState()
-type settersArrTypes = [
+type pageContentArgsArrTypes = [
     pageIndex: number,
     pageIndexSetter: Dispatch<SetStateAction<number>>,
     
@@ -24,33 +24,43 @@ type settersArrTypes = [
 
     cotiValoresExtra: IValoresExtraCotizacion,
     clienteData: IInputClienteDataEnviar,
-    serviciosSolicitadosArr: IServicioSolicitado[]
+    serviciosSolicitadosArr: IServicioSolicitado[],
+
+    ensambledObjectToSend: ICotizacionEnviar
 ]
 
 
 interface IPageOptions {[key:number]: JSX.Element}
 
-export function getPageContent(settersArr: settersArrTypes): JSX.Element {    
-    const pageIndex = settersArr[0];
-    const pageIndexSetter = settersArr[1];
+export function getPageContent(pageContentArgsArr: pageContentArgsArrTypes): JSX.Element {    
+    const pageIndex = pageContentArgsArr[0];
+    const pageIndexSetter = pageContentArgsArr[1];
 
-    const innerCotiValExtaSetter = settersArr[2];
-    const innerClienteDataSetter = settersArr[3];
-    const innerServSolicitadosArrSetter = settersArr[4];
+    const innerCotiValExtaSetter = pageContentArgsArr[2];
+    const innerClienteDataSetter = pageContentArgsArr[3];
+    const innerServSolicitadosArrSetter = pageContentArgsArr[4];
 
-    const innerCotiValoresExtra = settersArr[5];
-    const innerClienteData = settersArr[6];
-    const innerServiciosSolicitadosArr = settersArr[7];
+    const innerCotiValoresExtra = pageContentArgsArr[5];
+    const innerClienteData = pageContentArgsArr[6];
+    const innerServiciosSolicitadosArr = pageContentArgsArr[7];
+
+    const innerEnsambledObjToSend = pageContentArgsArr[8];
 
     //? BUSCAMOS GUARDAR LA FECHA SELECCIONADA, Y DEJAR EL INDICE EN 1 
     //? PARA "PASAR A LA SIG SUBPÁGINA"
-    const dateSetter = getFixedDateSetter(innerCotiValExtaSetter, pageIndexSetter);
+    const dateSetterFechaCoti = getFixedDateSetter(innerCotiValExtaSetter, 'fecha de cotización');
+    const dateSetterFechaValidezCoti = getFixedDateSetter(innerCotiValExtaSetter, 'fecha de validez de la cotización');
 
+    const changeToNextSubpage = (pageIndexSetter: Dispatch<SetStateAction<number>>, currentSubPage: number) => () => {
+        pageIndexSetter(currentSubPage + 1);
+    }
 
     const pageOptions: IPageOptions = {
-        0: <CalendarFrame dateSetter={dateSetter}/>,
-        1: <ClienteFrame clienteDataSetter={innerClienteDataSetter}/>,
-        2: <ServiciosSolicitadosFrame parentServiciosSolicitadosArr={innerServiciosSolicitadosArr} parentServSolicitadosArrSetter={innerServSolicitadosArrSetter}/>
+        0: <CalendarFrame changeToAnotherSubpage={changeToNextSubpage(pageIndexSetter, 0)} subpageTitle='fecha de cotización' dateSetter={dateSetterFechaCoti}/>,
+        1: <CalendarFrame changeToAnotherSubpage={changeToNextSubpage(pageIndexSetter, 1)} subpageTitle='fecha de validez de la cotización' dateSetter={dateSetterFechaValidezCoti}/>,
+        2: <ClienteFrame parent_formaPago={innerCotiValoresExtra.formaPago} fechaCotizacion={innerCotiValoresExtra.fechaCotizacion} parent_clienteDataSetter={innerClienteDataSetter} parent_cotiValExtaSetter={innerCotiValExtaSetter} parent_clientData={innerClienteData}/>,
+        3: <ServiciosSolicitadosFrame parentServiciosSolicitadosArr={innerServiciosSolicitadosArr} parentServSolicitadosArrSetter={innerServSolicitadosArrSetter}/>,
+        4: <ResumenCotizacionFrame ensambledObjToSend={innerEnsambledObjToSend}/>,
     }
 
     const selectedContent = pageOptions[pageIndex];

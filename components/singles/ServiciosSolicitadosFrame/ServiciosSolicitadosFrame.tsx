@@ -4,7 +4,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 
 
 import { DataRequester } from 'apiClient';
-import { getEmptyServicioDataObj, getEmptyServicioSolicitado, modifyArr, saveCotizacionesSwitcherID_container } from 'utils';
+import { getEmptyServicioDataObj, getEmptyServicioSolicitado, maximumLenghts } from 'utils';
 import styles from "./ServiciosSolicitadosFrame.module.css";
 import { 
     IServicioData, IServiciosSolicitadosFrameProps, 
@@ -113,7 +113,7 @@ interface RowsCollectionProps {
     //* ESTA ES LA FUNCIÓN QUE EJECUTAREMOS CUANDO INTERACTUEN CON LOS BOTONES DE CAMBIAR PAGINA
     parentServSolicitadosArrSetter: Dispatch<SetStateAction<IServicioSolicitado[]>>;
 
-    //* ESTO ES PARA QUE PODAMOS RECONSTRUIR LA LISTA DE FILAS AL VOLVER A LA PÁGINA
+    //* EN ESTA LISTA GUARDAMOS LOS SERVICIOS SOLICITADOS A ENVIAR
     parentServiciosSolicitadosArr: IServicioSolicitado[]
 }
 
@@ -122,12 +122,10 @@ const RowsCollection: FC<RowsCollectionProps> = (propsObj) => {
     //* ESTE ES EL ARRAY DE SERVICIOS SOLICITADOS QUE QUEREMOS ENVIAR
     //* ES IMPORTANTE YA QUE EN BASE A LA CANTIDAD DE ELEMENTOS DE ESTA LISTA
     //* HACEMOS LA RENDERIZACIÓN DE LAS FILAS
-    const [listaServiciosSolicitados, setListaSolicitados] = useState<IServicioSolicitado[]>([getEmptyServicioSolicitado()]);
     const [listaFilasJSX, setListaFilasJSX] = useState<JSX.Element[]>([]);
 
-    //* We want to run a parent useState setter function when hovering certain element
-    //* We only want to run it once, so this will help us.
-    const [setterMounted, setSetterMounted] = useState<boolean>(false);
+    //* just for the rerendering
+    const [amountOfRows, setAmountOfRows] = useState<number>(0);
 
     const {
         coleccionServicios, coleccionServiciosPorID, 
@@ -137,35 +135,29 @@ const RowsCollection: FC<RowsCollectionProps> = (propsObj) => {
     // * FUNCION QUE SE EJECUTA EN EL BOTON (+)
     const addNewNextServicioSolicitado = (rowIndex: number) => () => {
         if (rowIndex < 0) return;
-        listaServiciosSolicitados.push(getEmptyServicioSolicitado());
-        const proxyListaSolicitados = [...listaServiciosSolicitados];
-        setListaSolicitados(proxyListaSolicitados);
+        const proxyListaSolicitados = [...parentServiciosSolicitadosArr];
+        proxyListaSolicitados.push(getEmptyServicioSolicitado());
+        
         parentServSolicitadosArrSetter(proxyListaSolicitados);
+
+        //* PARA EJECUTAR EL useEffect
+        setAmountOfRows(proxyListaSolicitados.length);
     }
 
     // * FUNCION QUE SE EJECUTA EN EL BOTON (-)
     const removeCurrentServicioSolicitado = (rowIndex: number) => () => {
         if (rowIndex < 0) return;
-        listaServiciosSolicitados.pop();
-        const proxyListaSolicitados = [...listaServiciosSolicitados];
-        setListaSolicitados(proxyListaSolicitados);
+        const proxyListaSolicitados = [...parentServiciosSolicitadosArr];
+        proxyListaSolicitados.pop();
+
         parentServSolicitadosArrSetter(proxyListaSolicitados);
+
+        //* PARA EJECUTAR EL useEffect
+        setAmountOfRows(proxyListaSolicitados.length);
     }
 
 
     useEffect(() => {        
-        const mountSaveListaSolicitadosFn = () => {
-            const switcherContainer = document.getElementById(saveCotizacionesSwitcherID_container);
-            if (switcherContainer) {
-                switcherContainer.onmouseover = () => {
-                    // alert("c");
-                    parentServSolicitadosArrSetter(listaServiciosSolicitados);
-                }
-                setSetterMounted(true);
-            }
-        }
-        
-        
         const generateTableRows = (serviciosSolicitadosArr: IServicioSolicitado[]) => {            
             return serviciosSolicitadosArr.map((itemServicio, index) => {
                 const servicioFila = serviciosSolicitadosArr[index];
@@ -187,7 +179,9 @@ const RowsCollection: FC<RowsCollectionProps> = (propsObj) => {
                     
                     addNewRow={addNewNextServicioSolicitado(index)}
                     removeRow={removeCurrentServicioSolicitado(index)}
-                />            
+
+                    parentServSolicitadosArrSetter={parentServSolicitadosArrSetter}
+                />
             })
         }
         
@@ -195,25 +189,13 @@ const RowsCollection: FC<RowsCollectionProps> = (propsObj) => {
         const coleccionServiciosPorIDIsRdy = (Object.keys(coleccionServiciosPorID).length > 0);
         const conditionsAreOK = (coleccionServiciosIsRdy) && (coleccionServiciosPorIDIsRdy);
         if (conditionsAreOK) {
-            //* ONLY USE THE PARENT ARRAY IF WE SAVED A LOT OF ROWS
-            if (parentServiciosSolicitadosArr.length > 1) {
-                // alert("a");
-                setListaFilasJSX(generateTableRows(parentServiciosSolicitadosArr));
-            }else {
-                // alert("b");
-                setListaFilasJSX(generateTableRows(listaServiciosSolicitados));
-            }
+            setListaFilasJSX(generateTableRows(parentServiciosSolicitadosArr));
         }
 
-        //* RUN THE FUNCTION ONLY ONCE
-        if (!setterMounted) {
-            mountSaveListaSolicitadosFn();
-        }
-    }, [listaServiciosSolicitados])
+    }, [amountOfRows])
 
     return (
     <>
-        {/* <button onClick={() => {console.log("\n\n", listaServiciosSolicitados)}}>listaServiciosSolicitados</button> */}
         {listaFilasJSX}
     </>
     )
@@ -242,22 +224,44 @@ interface ServicioSoliRowProp {
     addNewRow: () => void;  
     //* FUNCIÓN DEL BOTON (-)
     removeRow: () => void;
+
+    //* PARA MODIFICAR LA LISTA PERTENECIENTE A UN COMPONENTE PADRE
+    parentServSolicitadosArrSetter: Dispatch<SetStateAction<IServicioSolicitado[]>>;
 }
 
 const ServicioSolicitadoRow: FC<ServicioSoliRowProp> = (propsObj) => {
-    const {
-        codigoValueProp, cantidadValueProp, servicioElegidoProp, rowIndex, 
-        coleccionServicios, listaNombreServicios, listaServiciosSolicitados,
-        addNewRow, removeRow } = propsObj;
-
+    //* --------------------------------------------------------------------------------
+    //* --------------------------------------------------------------------------------
+    //* VALORES DE CADA INPUT
     const [servicioElegido, setServicioElegido] = useState<string | null>('');
     const [codigoValue, setCodigoValue] = useState<string>('');
     const [cantidadValue, setCantidadValue] = useState<number>(0);
     
+    //* OBJETO QUE AYUDA A QUE MOSTREMOS DATOS DEL SERVICIO
     const [servicioData, setServicioData] = useState<IServicioData>(getEmptyServicioDataObj());
 
+    //* SÓLO PERMITIR MODIFICAR SI EL MOUSE ESTÁ ENCIMA
     const [rowIsActive, setRowIsActive] = useState<boolean>(false);
+    //* --------------------------------------------------------------------------------
 
+    //* --------------------------------------------------------------------------------
+    //* --------------------------------------------------------------------------------
+    const {
+        rowIndex, //* PARA ACCEDER A listaServiciosSolicitados Y CHEQUEAR OTRAS COSAS
+        
+        codigoValueProp, cantidadValueProp, servicioElegidoProp, //* PARA DESPLEGAR DATOS GUARDADOS
+        
+        coleccionServicios, listaNombreServicios, //* PARA CHEQUEAR Y PODER USAR EL AUTOCOMPLETAR
+        
+        listaServiciosSolicitados, parentServSolicitadosArrSetter, //* PARA MANEJAR LA LISTA A ENVIAR DEL COMPONENTE PADRE
+        
+        addNewRow, removeRow //* PARA DARLE FUNCIONALIDAD A LOS BOTONES (+) Y (-)
+    } = propsObj;
+    //* --------------------------------------------------------------------------------
+
+
+    //* --------------------------------------------------------------------------------
+    //* --------------------------------------------------------------------------------
     useEffect(() => {
         if (codigoValueProp !== '') {
             setCodigoValue(codigoValueProp);
@@ -275,7 +279,11 @@ const ServicioSolicitadoRow: FC<ServicioSoliRowProp> = (propsObj) => {
             setServicioData(getEmptyServicioDataObj());
         };
     }, []);
+    //* --------------------------------------------------------------------------------
 
+
+    //* SETTERS DE LOS INPUTS ----------------------------------------------------------
+    //* --------------------------------------------------------------------------------
 
     const setCodigoInputValue = (newCodigo: string) => {
         if (newCodigo !== '') {
@@ -284,25 +292,32 @@ const ServicioSolicitadoRow: FC<ServicioSoliRowProp> = (propsObj) => {
         setCodigoValue(newCodigo);
     }
     const setCantidadInputValue = (newCantidad: number) => {
-        if (newCantidad >= 0) {
+        // if (newCantidad >= 0) {
+        if ((newCantidad >= 0) && (`${newCantidad}`.length <= maximumLenghts.maxCantidadLength)) {
             listaServiciosSolicitados[rowIndex].cantidad = newCantidad;
             setCantidadValue(newCantidad);
         };
     }
 
     const setNewServicioElegido = (_: unknown, nuevoServicioElegido: string) => {
-        if (!(nuevoServicioElegido in coleccionServicios)) {
-            setServicioData(getEmptyServicioDataObj());
-            setServicioElegido(null);
-            return;
-        };
-        const servicioData = coleccionServicios[nuevoServicioElegido];
-        listaServiciosSolicitados[rowIndex].id = servicioData.id;
+        let servicioData: IServicioData = getEmptyServicioDataObj();
+        let servicioASettear: typeof servicioElegido = null;
+
+        if (nuevoServicioElegido in coleccionServicios) {
+            servicioData = coleccionServicios[nuevoServicioElegido];
+            servicioASettear = nuevoServicioElegido;
+        }
         
         setServicioData(servicioData);
-        setServicioElegido(nuevoServicioElegido);
+        setServicioElegido(servicioASettear);
+        
+        const proxyListaSolicitados = [...listaServiciosSolicitados];                
+        proxyListaSolicitados[rowIndex].id = servicioData.id;
+        parentServSolicitadosArrSetter(proxyListaSolicitados);
     }
-    
+    //* --------------------------------------------------------------------------------
+
+
     return (
     <>
         <tr 
@@ -312,6 +327,10 @@ const ServicioSolicitadoRow: FC<ServicioSoliRowProp> = (propsObj) => {
             }}
             onMouseLeave={() => {
                 setRowIsActive(false);
+
+                //* SI SACAMOS EL MOUSE DE LA FILA, GUARDAR LOS CAMBIOS
+                const proxyListaSolicitados = [...listaServiciosSolicitados];                
+                parentServSolicitadosArrSetter(proxyListaSolicitados);
             }}
         >
             <td className={styles['table-column-codigo-cell']}>{/* Código */}
