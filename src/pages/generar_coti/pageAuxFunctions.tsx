@@ -71,5 +71,3 @@ export function getPageContent(pageContentArgsArr: pageContentArgsArrTypes): JSX
     }
     return selectedContent;
 }
-
-

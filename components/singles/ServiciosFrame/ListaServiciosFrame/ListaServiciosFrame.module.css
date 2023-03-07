@@ -7,13 +7,43 @@
     border-radius: 5px;
 }
 
+.servicios-guardados-title {
+    width: fit-content;
+    margin: 0 auto;
+}
+
 .servicio-row-container {
     margin-top: 0.5rem;
     border-top: solid black 1px;
     padding-left: 0.2rem;
+    display: flex;
+
+    --data-width: 0.6;
 }
 
-.servicios-guardados-title {
-    width: fit-content;
-    margin: 0 auto;
+.servicio-row-container-data {
+    /* background-color: red; */
+    flex: var(--data-width);
+    width: 60%;
+    overflow-x: scroll;    
+    padding-left: 0.55rem;
+    display: flex;
+    flex-direction: column;
+    /* flex-wrap: wrap; */
+}
+
+.servicio-row-container-buttons {
+    /* background-color: blue; */
+    flex: calc(1 - var(--data-width));
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.servicio-row-container-buttons * {
+    margin: 0.25rem 0;
+    width: 2rem;
+    height: 2rem;
 }

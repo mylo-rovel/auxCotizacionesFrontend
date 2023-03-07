@@ -1,8 +1,8 @@
 .main-frame-container {
     flex-grow: 1;
     margin: 0 0.5rem;
-    min-height: 30vh;
-    height: fit-content;
+    overflow-y: scroll;
+    
     padding-bottom: 1.25rem;
     border: solid black 1px;
     border-radius: 5px;
@@ -13,9 +13,44 @@
     margin: 0 auto;
 }
 
+/** ------------------------------------------------------------------------- */
+/** ------------------------------------------------------------------------- */
+.header-container {
+    width: 90%;
+
+    display: flex;
+    /* justify-content: space-between; */
+    align-items: center;
+    
+    margin: 0 auto;
+    margin-top: 1rem;
+}
+
+.header-container section{
+    /* background-color: red; */
+    /* width: fit-content; */
+    flex: 0.33;
+    display: flex;
+    justify-content: center;
+}
+
+.header-container section:last-child {
+    border: solid transparent 1px;
+}
+
+.header-container .main-frame-title-container *{
+    width: fit-content;
+    margin: 0 auto;
+}
+/** ------------------------------------------------------------------------- */
+/** ------------------------------------------------------------------------- */
+
+
+
+/** ------------------------------------------------------------------------- */
 /** THE TITLE OF THE MAIN FRAME */
-.main-frame-container section:first-child {
-    font-size: 2rem;
+.main-frame-container .main-frame-title-container {
+    font-size: 2.2rem;
     width: fit-content;
     margin: 0 auto;
     margin-top: 1rem;
@@ -23,8 +58,22 @@
     /* background-color: blue; */
 }
 
+.modo-actual-title-container h2{
+    width: fit-content;
+    font-size: 1.45rem;
+    margin: 1rem 0;
+    border-bottom: 5px solid black;
+    border-radius: 0.45rem;
+}
+
+.modo-actual-title-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+
 /** EACH INPUT BOX IN THE MAIN FRAME */
-.main-frame-container section input {
+.new_trabajo-input-container input {
     box-sizing: border-box;
     width: 100%;
     font-weight: bolder;
@@ -34,61 +83,65 @@
     padding: 0 0.5rem;
 }
 
-/** IMPORTANT BECAUSE THIS POINTS TO THE COMPONENT WE IMPORTED */
-.autocomplete-limited-container {
-    width: 100%;
+.new_trabajo-input-container {
+    margin-bottom: 0.5rem;
 }
+/** ------------------------------------------------------------------------- */
 
-/** STYLE FOR THE MODE BUTTONS */
+
+
+/** STYLE FOR THE BUTTONS ----------------------------------------------------*/
 .bottom-buttons-container {
     display: flex;
     justify-content: space-between;
     width: 90%;
     margin: 0 auto;
     margin-top: 5%;
-    /* background-color: blue; */
 }
 
 /** THIS WAY WE REACH ALL BUTTONS */
-.bottom-buttons-container div button{
+.bottom-buttons-container div button,
+.cambiar-fecha-button-container button {
     width: fit-content;
-    border: solid black 1px;
-    border-radius: 5px;
     padding: 0.25rem;
     cursor: pointer;
-}
-.mode-buttons-container button:nth-child(1){
-    border-top-right-radius: 0px;
-    border-bottom-right-radius: 0px;
-}
-.mode-buttons-container button:nth-child(2){
-    border-right: 0;
+    transition: all 0.25s;
+    
+    background-color: rgb(255, 255, 255);
+    border-top: solid black 1px;
+    border-bottom: solid black 1px;;
     border-left: 0;
-    border-top-right-radius: 0px;
-    border-bottom-right-radius: 0px;
-    border-top-left-radius: 0px;
-    border-bottom-left-radius: 0px;
-}
-.mode-buttons-container button:nth-child(3){
-    border-top-left-radius: 0px;
-    border-bottom-left-radius: 0px;
+    border-right: 0;
+    border-radius: 0;
 }
 
-
+.cambiar-fecha-button-container button h4,
 .bottom-buttons-container button h4{
     font-size: 1.25rem;
-    transition: all 0.25s;
 }
 
-.unactive-mode-button {
-    opacity: 0.70;
-}
-
-.unactive-mode-button:hover,
-.save-service-button-container button:hover {
+.cambiar-fecha-button-container button:hover,
+.bottom-buttons-container button:hover {
     letter-spacing: 2px;
 }
 
+.save-service-button-container{
+    width: fit-content;
+    margin: 0 auto;
+}
 .save-service-button-container button {
-    background-color: rgb(0, 212, 0);
+    letter-spacing: 4px;
+    background-color: rgb(255, 255, 255);
+    border-top: solid black 1px;
+    border-bottom: solid black 1px;;
+    border-left: 0;
+    border-right: 0;
+    border-radius: 0;
+}
+.save-service-button-container button:hover {
+    background-color: rgb(134, 255, 53);
+    border-color: transparent;
+    border-radius: 2rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
 }

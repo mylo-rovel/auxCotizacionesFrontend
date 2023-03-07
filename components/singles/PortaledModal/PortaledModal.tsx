@@ -4,13 +4,16 @@ import { IPortaledModalProps } from 'models';
 import styles from './PortaledModal.module.css';
 import { FancyButton, PortalContainer } from 'components/singles';
 
-export const PortaledModal: FC<PropsWithChildren<IPortaledModalProps>> = ({children, buttonText, buttonFn}) => {
-  
+export const PortaledModal: FC<PropsWithChildren<IPortaledModalProps>> = (props) => {
+    const {children, buttonText, buttonFn, contentIsNotOnlyText} = props;
+
+    const contentContainerClass = (contentIsNotOnlyText) ? '' : styles['portal-modal-text-section'];
+
     return (
     <>
         <PortalContainer>
             <article className={styles['portal-modal-container']}>
-                <section className={styles['portal-modal-text-section']}>
+                <section className={`${contentContainerClass}`}>
                     {children}
                 </section>
                 <section className={styles['portal-modal-button-section']}>

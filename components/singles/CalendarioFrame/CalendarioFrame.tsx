@@ -18,18 +18,6 @@ export const CalendarFrame: FC<ICalendarioFrameProps> = ({dateSetter, subpageTit
         <>
             {(displayModal) ? 
             <>
-                {/* <PortalContainer>
-                    <article className={styles['fecha-elegida-container']}>
-                        <h1>{fechaTitleText} elegida</h1>
-                        <h1>{fechaElegida}</h1>
-                        <section>
-                            <FancyButton textToDisplay='CERRAR' onClickFn={() => {
-                                setDisplayModal(false);
-                                changeToAnotherSubpage();
-                            }}/>
-                        </section>
-                    </article>
-                </PortalContainer> */}
                 <PortaledModal 
                     buttonText='CERRAR' 
                     buttonFn={() => {
@@ -45,16 +33,16 @@ export const CalendarFrame: FC<ICalendarioFrameProps> = ({dateSetter, subpageTit
                 <h2 style={{color:colorToUse, fontSize:'1.75rem'}} >{subpageTitle.toUpperCase()}</h2>
             </article>
             <div className={styles['calendar-frame']}>
-            <Calendar 
-                    showFixedNumberOfWeeks = {false}
-                    showNeighboringMonth = {false}
-                    locale='es'
-                    onClickDay={(newDate) => {
-                        setDisplayModal(true);
-                        setFechaElegida(getValidDateString(newDate));
-                        dateSetter(newDate)
-                    }}
-            />
+                <Calendar 
+                        showFixedNumberOfWeeks = {false}
+                        showNeighboringMonth = {false}
+                        locale='es'
+                        onClickDay={(newDate) => {
+                            setDisplayModal(true);
+                            setFechaElegida(getValidDateString(newDate));
+                            dateSetter(newDate)
+                        }}
+                />
             </div>        
         </>
     )

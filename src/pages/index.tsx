@@ -5,6 +5,7 @@ import { NextPageWithLayout } from "./_app";
 import { MainLayout } from 'components/layouts';
 import { MainPageFrame } from 'components/singles';
 
+
 const HomePage: NextPageWithLayout<IHomePageProps> = (props) => {
   return (
     <>

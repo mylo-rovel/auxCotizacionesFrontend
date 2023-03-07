@@ -1,10 +1,10 @@
 import Head from "next/head";
 import { FC, PropsWithChildren } from "react";
 
-import { IMainLayoutProps } from "../../../models";
 import { Navbar } from "components/singles";
+import { IMainLayoutProps } from "models";
 
-const defaultTitle = "my tutilo";
+const defaultTitle = "Auxiliar Registro Trabajos";
 
 export const MainLayout:FC<PropsWithChildren<IMainLayoutProps>> = ({children, title}) => {
     return (

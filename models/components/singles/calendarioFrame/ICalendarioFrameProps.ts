@@ -1,4 +1,4 @@
-export type calendarFrameToUse = 'fecha de cotización' | 'fecha de validez de la cotización'; 
+export type calendarFrameToUse = 'fecha de cotización' | 'fecha de validez de la cotización' | ''; 
 
 export interface ICalendarioFrameProps {
     dateSetter: (newDate: Date) => void;

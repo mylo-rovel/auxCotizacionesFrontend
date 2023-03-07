@@ -1,87 +1,110 @@
 import { DataRequester } from "apiClient";
 
 import { 
-    IServicioBodyRequestFormat, IModificarServicioDataEnviar, IServicioDataToSend,
+    IServicioDataToSend,
     ICotizacionEnviar, IServicioSolicitado, IInputClienteDataEnviar,
-    IValoresExtraCotizacion, IServicioData
+    IValoresExtraCotizacion, IServicioData, INewTrabajo, IServicioBodyRequestFormat, ITrabajoEliminar
 } from "models";
 import { Dispatch, SetStateAction } from "react";
 import { maximumLenghts } from "utils";
 
-export const enviarDatosServicio = async (dataToSend: IServicioDataToSend) => {
-    const {
-        coleccionServicios, modoInterfaz, servicioBuscado, precioServicio, 
-        servicioModificadoData, setResultadoPeticion, setDisplayModal} = dataToSend;
-    let resultadoPeticion = '';
 
-    const reqBodyToSend: IServicioBodyRequestFormat = {
-        descripcion: servicioBuscado,
-        valor_unitario: precioServicio
-    }
-
-    switch (modoInterfaz) {
-        case "AGREGAR":
-            //? CHEQUEAR SI ALGUNO DE LOS DATOS A ENVIAR SON INVÁLIDOS
-            if ((servicioBuscado === '') || (precioServicio < 1) || (`${precioServicio}`.length > 9 )){
-                console.log("Error. AGREGAR", servicioBuscado, precioServicio);
-                setResultadoPeticion('DATOS ENTREGADOS NO VÁLIDOS PARA AGREGAR EL SERVICIO');
-                setDisplayModal(true);
-            }
-            else {
-                const {operationResultStr} = await DataRequester.agregarServicioNuevo(reqBodyToSend);
-                setResultadoPeticion(operationResultStr);
-                setDisplayModal(true);
-            }
-            return;
-        //* --------------------------------------------------------
-        case "MODIFICAR":
-            //? CHEQUEAR SI ALGUNO DE LOS DATOS A ENVIAR SON INVÁLIDOS
-            if (!(servicioBuscado in coleccionServicios) || (`${servicioModificadoData.nuevoPrecio}`.length > 9 )){
-                console.log("Error. MODIFICAR", servicioBuscado, coleccionServicios);
-                setResultadoPeticion('DATOS ENTREGADOS NO VÁLIDOS PARA MODIFICAR EL SERVICIO');
-                setDisplayModal(true);
-            }
-            else {
-                const rebBodyToSend_Modify: IModificarServicioDataEnviar = {
-                    old_servicio: {
-                        descripcion: servicioBuscado,
-                        valor_unitario: precioServicio,
-                    },
-                    new_servicio: {
-                        descripcion: (servicioModificadoData.nuevoNombre === '') ? servicioBuscado : servicioModificadoData.nuevoNombre,
-                        valor_unitario: (servicioModificadoData.nuevoPrecio === 0) ? precioServicio : servicioModificadoData.nuevoPrecio
-                    }
-                }
-    
-                const {operationResultStr} = await DataRequester.modificarServicioGuardado(rebBodyToSend_Modify);
-                setResultadoPeticion(operationResultStr);
-                setDisplayModal(true);
-            }
-            return;
-        
-        case "ELIMINAR":
-            //? CHEQUEAR SI ALGUNO DE LOS DATOS A ENVIAR SON INVÁLIDOS
-            if (!(servicioBuscado in coleccionServicios)){
-                console.log("Error. ELIMINAR", servicioBuscado, coleccionServicios);
-                console.log(servicioBuscado, coleccionServicios);
-                setResultadoPeticion('DATOS ENTREGADOS NO VÁLIDOS PARA ELIMINAR EL SERVICIO');
-                setDisplayModal(true);
-            }
-            else {
-                const {operationResultStr} = await DataRequester.borrarServicioGuardado(reqBodyToSend);
-                setResultadoPeticion(operationResultStr);
-                setDisplayModal(true);
-            }
-            return;
-
-        default:
-            alert("MODO NO VÁLIDO")
-            resultadoPeticion = 'ERROR. MODO NO VÁLIDO'
-            setResultadoPeticion(resultadoPeticion);
-            setDisplayModal(true);
-            return;
-    }
+const obtenerObjetoTrabajoBienTipado = (newTrabajo: INewTrabajo, fecha_realizacion: string): IServicioBodyRequestFormat => {
+    return {
+        id:                 Number(newTrabajo.id),
+        detalle_servicio:   String(newTrabajo.detalle_servicio),
+        equipo:             String(newTrabajo.equipo),
+        codigo:             String(newTrabajo.codigo),
+        info_adicional:     String(newTrabajo.info_adicional),
+        valor:              Number(newTrabajo.valor),
+        fecha_realizacion
+    };
 };
+const checkIfNewTrabajo_IS_VALID = (newTrabajo: INewTrabajo) => {
+    //* CHECK ID:
+    //* VALID VALUES: [-1, 1, 2, 3, 4, ...] EVERY OTHER NUMBER IS INVALID
+    if ((Number(newTrabajo.id) < -1) || (Number(newTrabajo.id) === 0)) {
+        console.log(Number(newTrabajo.id));
+        return {
+            isValid: false,
+            message: 'ID DE TRABAJO ERRÓNEA. LLAMAR AL DESARROLLADOR DE LA APP',
+        };
+    };
+    //* CHECK VALOR: WE CAN'T SAVE VERY LARGE NUMBERS
+    if (String(newTrabajo.valor).length > maximumLenghts.maxValorLength) {
+        return {
+            isValid: false,
+            message: 'El campo VALOR tiene demasiados dígitos',
+        };
+    };
+    return {
+        isValid: true,
+        message: '',
+    };
+};
+export const guardarTrabajo = async (dataToSend: IServicioDataToSend) => {
+    const { 
+        servicioGuardar, fecha_realizacion, 
+        setResultadoPeticion, setDisplayResultadoModal, 
+        updateIDTrabajoModificar 
+    } = dataToSend;
+
+    //* CHEQUEAR SI ALGUNO DE LOS DATOS A ENVIAR SON INVÁLIDOS
+    const {isValid, message} = checkIfNewTrabajo_IS_VALID(servicioGuardar)
+    if (!isValid){
+        setResultadoPeticion(message);
+        setDisplayResultadoModal(true);
+        return;
+    }
+
+    let operationResult = '';
+    const fixedServicioGuardar: IServicioBodyRequestFormat = obtenerObjetoTrabajoBienTipado(servicioGuardar, fecha_realizacion);
+    //TODO: REMEMBER WE ALREADY CHECKED IF THE ID IS IN THIS COLLECTION => [-1, 1, 2, 3, ...]
+    //* IF servicioGuardar.id === -1, THE TRABAJO IS NEW
+    if (servicioGuardar.id === -1) {
+        operationResult = await DataRequester.agregarServicioNuevo(fixedServicioGuardar);
+    }
+    //* IF THE ID IS GREATER THAN 0, WE ARE MODIFYING AN OLD TRABAJO
+    else {
+        operationResult = await DataRequester.modificarServicioGuardado(fixedServicioGuardar);
+    }
+    setResultadoPeticion(operationResult);
+    setDisplayResultadoModal(true);
+    updateIDTrabajoModificar(-2);
+};
+
+
+export const eliminarTrabajo = async (dataToSend: ITrabajoEliminar) => {
+    const { 
+        idTrabajo,
+        setResultadoPeticion, setDisplayResultadoModal, 
+        updateIDTrabajoModificar 
+    } = dataToSend;
+
+    const operationResult = await DataRequester.borrarServicioGuardado(idTrabajo);
+    setResultadoPeticion(operationResult);
+    setDisplayResultadoModal(true);
+    updateIDTrabajoModificar(-2);
+};
+
+
+
+//* --------------------------------------------------------------------------------------
+//* --------------------------------------------------------------------------------------
+//* --------------------------------------------------------------------------------------
+//* --------------------------------------------------------------------------------------
+
+export const generateEmptyNewTrabajo = ():INewTrabajo => (
+    {
+        id: -1,
+        detalle_servicio: '',
+        equipo: '',
+        codigo: '',
+        info_adicional: '',
+        valor: '',        
+    }
+)
+
 
 export const getEnsambledCotizacionEnviar = (
     valoresExtra: IValoresExtraCotizacion,
@@ -132,6 +155,14 @@ export const getEmptyServicioSolicitado = (): IServicioSolicitado => {
     }
 };
 
+export const getEmptyServicioRealizado = (): IServicioSolicitado => {
+    return {
+        id: -1,
+        cantidad: 0,
+        codigo: '',
+    }
+};
+
 export const getDummyServicioSolicitadoArr = (arrLength: number): IServicioSolicitado[] => {
     const opcionesID = [31, 19, 28, 16, 30, 29, 20];
     return new Array(arrLength).fill(0).map((_, index) => {
@@ -146,12 +177,25 @@ export const getDummyServicioSolicitadoArr = (arrLength: number): IServicioSolic
 export const getEmptyServicioDataObj = (): IServicioData => {
     return {
         id: -1,
-        descripcion: '',
-        valor_unitario: 0,
+        
+        detalle_servicio: '',
+        equipo: '',
+        codigo: '',
+        info_adicional: '',
+        valor: 0,
+        fecha_realizacion: '',
+
         created_at: '',
         updated_at: '',
     }
 };
+//* --------------------------------------------------------------------------------------
+//* --------------------------------------------------------------------------------------
+//* --------------------------------------------------------------------------------------
+//* --------------------------------------------------------------------------------------
+
+
+
 
 
 //* --------------------------------------------------------------------------------------
@@ -192,7 +236,18 @@ const checkServiciosSolicitados = (serviciosSolicitados: IServicioSolicitado[]):
     );
 }
 
-export const enviarDatosCotizacion = async (ensambledObjToSend: ICotizacionEnviar, setResultadoOperacionStr: Dispatch<SetStateAction<string>>, setDisplayModal: Dispatch<SetStateAction<boolean>>, setOperacionFueExitosa: Dispatch<SetStateAction<boolean>>) => {
+interface IEnviarDatosCotizacion {
+    ensambledObjToSend: ICotizacionEnviar;
+    setResultadoOperacionStr: Dispatch<SetStateAction<string>>;
+    setDisplayModal: Dispatch<SetStateAction<boolean>>;
+    setOperacionFueExitosa: Dispatch<SetStateAction<boolean>>;
+}
+
+export const enviarDatosCotizacion = async (propsObj: IEnviarDatosCotizacion) => {
+    const {
+        ensambledObjToSend, setResultadoOperacionStr,
+        setDisplayModal, setOperacionFueExitosa } = propsObj;
+
     // const clienteDataIsValid = checkClienteData(clienteData, formaPago);
     // const serviciosSolicitadosAreValid = checkServiciosSolicitados(serviciosSolicitados);
     // const dataEnviarAreValid = clienteDataIsValid && serviciosSolicitadosAreValid;
@@ -249,9 +304,9 @@ export const enviarDatosCotizacion = async (ensambledObjToSend: ICotizacionEnvia
     }
     //* --------------------------------------------------------------------------------
 
-    const {operationResultStr, operationWasSuccess} = await DataRequester.enviarDatosCotizacion(ensambledObjToSend);
+    const operationResultStr = await DataRequester.enviarDatosCotizacion(ensambledObjToSend);
     setResultadoOperacionStr(operationResultStr);
-    setOperacionFueExitosa(operationWasSuccess);
+    setOperacionFueExitosa(true);
     setDisplayModal(true);
     return operationResultStr;
 }

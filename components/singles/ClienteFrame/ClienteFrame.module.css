@@ -1,6 +1,6 @@
 .cliente-main-container {
-    width: 41vw;
-    height: 25vw;
+    width: 50vw;
+    height: 65vh;
     overflow-y: scroll;
 
     margin: 0 auto;
@@ -27,7 +27,8 @@
 
 .autocomplete-limited-container,
 .cliente-input-row {
-    width: 25vw;
+    width: 35vw;
+    /* width: 90%; */
 }
 
 .cliente-input-row {

@@ -40,8 +40,7 @@ export const getFixedDateSetter = (innerCotiValExtaSetter: Dispatch<SetStateActi
             })            
             return;
         }
-        // if (frameToUse === 'fecha de validez de la cotización') {
-        else {
+        if (frameToUse === 'fecha de validez de la cotización') {
             innerCotiValExtaSetter((prevState) => {
                 return {
                     ...prevState,                    
@@ -63,7 +62,7 @@ export const testIfRutIsValid = (rutStr: string): boolean => {
 export const getServiciosIDCollection = (serviciosDataArr: IServicioData[]): IServicioIDData => {
     const objectToReturn: IServicioIDData = {}
     serviciosDataArr.forEach((servicioObj) => {
-        objectToReturn[servicioObj.descripcion] = servicioObj.id;
+        objectToReturn[servicioObj.detalle_servicio] = servicioObj.id;
     })
     return objectToReturn;
 }
@@ -88,4 +87,9 @@ export const modifyArr = (props: modifyArrProps) => {
     };
 
     return solicitudesArrLeft.concat(solicitudesArrRight);
+}
+
+
+export const getAcceptableStringValue = (valueToCheck: string | number): string => {
+    return (String(valueToCheck).length === 0) ? ' - ' : String(valueToCheck)
 }

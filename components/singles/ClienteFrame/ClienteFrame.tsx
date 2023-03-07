@@ -237,6 +237,26 @@ const RutInputRow: FC<IRutInputRowProps> = (inputProps) => {
 
     const switchModifyClienteFlag = () => inputProps.setModificarClienteAntiguo((prevState) => !prevState);
 
+    const ModificarClienteButton = () => {
+        if (!inputProps.rutIsValid) return <></>;
+        return (
+        <>
+            <div></div>
+            <button className={`${styles['cliente-rut-input-button']}`} onClick={switchModifyClienteFlag}>
+                Modificar cliente
+            </button>
+        </>)
+    }
+
+    const ValidRutLabel = () => {
+        return (
+        <>
+            <div></div>
+            <label style={{color:borderColorCollection[rutResultClass]}}> 
+                {auxValidMessageCollection[rutResultClass]} 
+            </label>
+        </>)
+    }
     return (
     <>
     <article className={`${styles['cliente-rut-input-row']}`}>
@@ -260,21 +280,13 @@ const RutInputRow: FC<IRutInputRowProps> = (inputProps) => {
         </section>
         
         <section className={`${styles['cliente-rut-input-left-section']}`}>
+            
             <section className={`${styles['cliente-rut-input-left-element']}`}>
-                <div></div>
-                <label style={{color:borderColorCollection[rutResultClass]}}> 
-                    {auxValidMessageCollection[rutResultClass]} 
-                </label>
+                <ValidRutLabel/>
             </section>
+
             <section className={`${styles['cliente-rut-input-left-element']}`}>
-                <div></div>
-                {                    
-                (!inputProps.rutIsValid)
-                ?   <></>
-                :   <button className={`${styles['cliente-rut-input-button']}`} onClick={switchModifyClienteFlag}>
-                        Modificar cliente
-                    </button>
-                }
+                <ModificarClienteButton/>
             </section>
         </section>
     </article>
@@ -312,12 +324,6 @@ const ClientDataRow: FC<IInputRowProps> = (inputProps) => {
     useEffect(() => {
         setRowIsDisabled(!rowIsDisabled);
         setDataRowValue(inputProps.inputValueProp);
-        // if (inputProps.inputValueProp === 0) {
-        //     setDataRowValue('');
-        // }else {
-        //     setDataRowValue(inputProps.inputValueProp);
-        // }
-    // },[inputProps.inputValueProp]);
     },[inputProps.disabled, inputProps.inputValueProp])
 
     

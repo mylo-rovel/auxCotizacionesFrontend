@@ -12,9 +12,7 @@
 }
 
 .calendar-frame {
-    /* position: relative;
-    z-index: 999; */
-
+    /* background-color: red; */
     height: fit-content;
     width: 50vw;
     margin: 0 auto;
@@ -39,30 +37,6 @@
     text-decoration: none;
 }
 
-
-
-/** PORTAL ELEMENT  */
-.fecha-elegida-container {
-    background-color: white;
-    position: absolute;
-    z-index: 999;
-
-    /** This is the part that center the container */
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-
-    /** Moving up the modal */
-    top: 30%;
-
-    /** Making the modal resizable depending to the content */
-    width: fit-content;
-    height: fit-content;
-
-    padding: 0.5rem 2rem;
-    border-radius: 0.5rem;
-    border: solid black 1px;
-}
 
 .fecha-elegida-container h1 {
     font-weight: bolder;

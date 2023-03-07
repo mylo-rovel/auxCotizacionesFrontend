@@ -1,5 +1,6 @@
 export const navbarButtonNames = [
-    "Servicios",
-    "Registrar servicios",
+    "Registrar trabajos",
+    "Generar coti",
+    "Buscar docu",
     "Configuracion"
 ]

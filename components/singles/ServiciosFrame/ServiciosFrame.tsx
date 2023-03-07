@@ -1,77 +1,87 @@
-import { FC, useEffect, useRef, useState } from 'react';
+import Calendar from 'react-calendar';
+import { FC, useContext, useEffect, useState } from 'react';
 
-import { DataRequester } from "apiClient";
-import { getServiciosIDCollection } from 'utils';
+import { getValidDateString } from 'utils';
 import styles from "./ServiciosFrame.module.css";
+import { TrabajosContext } from 'context/trabajos';
 import { PortaledModal } from 'components/singles';
-import { ListaServiciosFrame } from "./ListaServiciosFrame/ListaServiciosFrame";
+import { IServiciosFrameProps } from "models";
 import { MainServiciosFrame } from "./MainServiciosFrame/MainServiciosFrame";
-import { ModifyServicioFrame } from "./ModifyServicioFrame/ModifyServicioFrame";
-import { IServicioData, IServiciosFrameProps, modoInterfazServicios, IServicioModificadoData, IServicioDataToSend } from "models";
+import { ListaServiciosFrame } from "./ListaServiciosFrame/ListaServiciosFrame";
 
 export const ServiciosFrame: FC<IServiciosFrameProps> = () => {
-    const [coleccionServicios, setListaServGuardados] = useState<IServicioData[]>([]);
-    const [modoInterfaz, setModoInterfaz] = useState<modoInterfazServicios>('AGREGAR');
-    const [servicioBuscado, setServicioBuscado] = useState<string>('');
-    const [precioServicio, setPrecioServicio] = useState<number>(0);
-    const servicioModificadoData = useRef<IServicioModificadoData>({nuevoNombre:'', nuevoPrecio:0});
-    
-    const [displayModal, setDisplayModal] = useState<boolean>(false);
+    const { 
+        fechaTrabajoEscogida, updateFechaTrabajoEscogida, 
+        displayCalendar, setDisplayCalendarModal,
+        updateIDTrabajoModificar
+     } = useContext(TrabajosContext);
+
+    const [displayModalResultado, setDisplayModalResultado] = useState<boolean>(false);
+
     const [resultadoPeticion, setResultadoPeticion] = useState<string>('');
-
-    useEffect(() => {
-        const fetchServicios = async () => {
-            const serviciosArr = await DataRequester.getListaServicios();            
-            setListaServGuardados(serviciosArr);
-        }
-        fetchServicios();
-    }, [displayModal]);
-
-    const servicioDataToSend: IServicioDataToSend = {
-        coleccionServicios: getServiciosIDCollection(coleccionServicios),
-        modoInterfaz,
-        servicioBuscado,
-        precioServicio,
-        servicioModificadoData: servicioModificadoData.current,
-        setResultadoPeticion,
-        setDisplayModal
-    }
     
-    const displayModalButtonFn = () => {
-        if (document) {
-            setDisplayModal(false);
-            document.location.reload();
+    useEffect(() => {
+        if (fechaTrabajoEscogida === '') {
+            const todayDateObj = new Date();
+            updateFechaTrabajoEscogida(getValidDateString(todayDateObj));
         }
-    }
+        // return () => {
+        //     // updateIDTrabajoModificar(-2);
+        // }
+    }, [fechaTrabajoEscogida]);
 
-    return <>
-        {(displayModal) ? 
+
+    const displayModalResultadoButtonFn = () => { if (document) setDisplayModalResultado(false); }
+    const displayModalCalendarioButtonFn = () => { if (document) setDisplayCalendarModal(false); }
+
+
+    const ModalResultadoOperacion = () => {
+        if (!displayModalResultado) return <></>;
+        return (
         <>
-            <PortaledModal buttonText='CERRAR' buttonFn={displayModalButtonFn}>
+            <PortaledModal buttonText='CERRAR' buttonFn={displayModalResultadoButtonFn}>
                 <h1>{resultadoPeticion}</h1>
             </PortaledModal>
-        </> : null}
+        </>)
+    }
 
-        {/* <article style={{marginTop: ((resultadoPeticion === '') ? '3.3rem' : '0') }}> */}
+    const ModalCalendario = () => {
+        if (!displayCalendar) return <></>;
+        return (
+        <>
+            <PortaledModal contentIsNotOnlyText={true} buttonText='CERRAR' buttonFn={displayModalCalendarioButtonFn}>
+                <article className={styles['calendar-frame']}>                
+                    <Calendar 
+                        showFixedNumberOfWeeks = {false}
+                        showNeighboringMonth = {false}
+                        locale='es'
+                        onClickDay={(newDate) => {
+                            const dateString = getValidDateString(newDate);
+                            // alert(dateString);
+                            updateFechaTrabajoEscogida(dateString);
+                            setDisplayCalendarModal(false);
+                        }}
+                    />    
+                </article>        
+            </PortaledModal>
+        </>)
+    }
+
+
+    return <>
+        
+        <ModalResultadoOperacion/>
+        <ModalCalendario/>
+        
         <article>
             <section className={styles['servicios-frame-container']}>
-                <ModifyServicioFrame 
-                    modoInterfaz={modoInterfaz}
-                    nombreOriginalModificar={servicioBuscado}
-                    coleccionServicios={getServiciosIDCollection(coleccionServicios)}
-                    nuevoServicioData={servicioModificadoData}
+                <MainServiciosFrame
+                    setDisplayModalResultado={setDisplayModalResultado}
+                    setResultadoPeticion={setResultadoPeticion}
                 />
-                <MainServiciosFrame 
-                    serviciosGuardados={coleccionServicios} 
-                    mainServicioSetter={setServicioBuscado}
-                    mainPrecioSetter={setPrecioServicio}
-                    modoInterfaz={modoInterfaz} 
-                    modoSetter={setModoInterfaz}
-                    
-                    datosServicioEnviar={servicioDataToSend}   
-                />
-                <ListaServiciosFrame 
-                    serviciosGuardados={coleccionServicios}
+                <ListaServiciosFrame
+                    setDisplayModalResultado={setDisplayModalResultado}
+                    setResultadoPeticion={setResultadoPeticion}
                 />
             </section>
         </article>

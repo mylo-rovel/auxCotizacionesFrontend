@@ -4,11 +4,12 @@ import { maxPageIndex } from 'utils';
 import { NextPageWithLayout } from "../_app";
 import { MainLayout } from 'components/layouts';
 import styles from "./registrar_servicios.module.css";
+import { ContextProvidersWrapper } from "context/ContextWrapper";
 import { getPageContent, handleIndexChange} from './pageAuxFunctions';
 import { IRegistrarServiciosPageProps, IValoresExtraCotizacion, IInputClienteDataEnviar, IServicioSolicitado } from "../../../models";
 import { getEmptyCotiValoresExtra, getEmptyClienteData, getEnsambledCotizacionEnviar, saveCotizacionesSwitcherID_container, getEmptyServicioSolicitado } from 'utils';
 
-const RegistrarServiciosPage: NextPageWithLayout<IRegistrarServiciosPageProps> = (props) => {
+const GenerarCotizacionPage: NextPageWithLayout<IRegistrarServiciosPageProps> = (props) => {
   const [subPageIndex, setSubPageIndex] = useState<number>(0);
   //* ACÁ INCLUIMOS DATOS COMO LA FECHA Y OTRAS COSAS QUE QUEREMOS ENVIAR
   const [cotiValoresExtra, setCotiValoresExtra] = useState<IValoresExtraCotizacion>(getEmptyCotiValoresExtra());
@@ -56,12 +57,14 @@ const RegistrarServiciosPage: NextPageWithLayout<IRegistrarServiciosPageProps> =
   )
 };
 
-RegistrarServiciosPage.getLayout = function getLayout(page:JSX.Element){
+GenerarCotizacionPage.getLayout = function getLayout(page:JSX.Element){
   return(
-    <MainLayout title="AuxiliarCotizaciones">
-      {page}
-    </MainLayout>
+    <ContextProvidersWrapper>
+      <MainLayout title="Auxiliar Registro Trabajos">
+        {page}
+      </MainLayout>
+    </ContextProvidersWrapper>
   )
 }
 
-export default RegistrarServiciosPage;
+export default GenerarCotizacionPage;

@@ -6,7 +6,9 @@
     /** This is the part that center the container */
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    /* transform: translate(-50%, -50%); */
+    transform: translate(-50%, -29%);
+
 
     /** Moving up the modal */
     top: 30%;

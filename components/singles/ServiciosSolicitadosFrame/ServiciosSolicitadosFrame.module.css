@@ -33,12 +33,12 @@
     width: calc(var(--base-column-width) + var(--descripcion-column-extra-width));
 }
 
-.table-column-valorunitario {
+.table-column-equipo {
     --valorunitario-column-extra-width: -5%;
     width: calc(var(--base-column-width) + var(--valorunitario-column-extra-width));
 }
 
-.table-column-cantidad {
+.table-column-info_adicional {
     --cantidad-column-extra-width: -5%;
     width: calc(var(--base-column-width) + var(--cantidad-column-extra-width));
 }

@@ -1,61 +1,69 @@
-import { Dispatch, MutableRefObject, SetStateAction } from "react";
+import { INewTrabajo } from "models";
+import { Dispatch, SetStateAction } from "react";
 
-import { IServicioData, IServicioIDData } from "models";
+//* Needed for the main component of the registrar_trabajos page
+export interface IServiciosFrameProps {}
 
-export interface IServiciosFrameProps {
-    
-}
-
-//* THIS GOES TO MainServiciosFrame
+//* THIS IS A MainServiciosFrame PROP => THIS IS THE DATA WE WILL SEND TO THE BACKEND
 export interface IServicioDataToSend {
-    coleccionServicios : IServicioIDData;
-    modoInterfaz : modoInterfazServicios;
-    servicioBuscado : string;
-    precioServicio: number;
-    servicioModificadoData : IServicioModificadoData;
+    servicioGuardar: INewTrabajo;
+    fecha_realizacion: string;
 
+    //! IMPORTANT TO DISPLAY THE RESULT OF THE OPERATION
     setResultadoPeticion: Dispatch<SetStateAction<string>>;
-    setDisplayModal: Dispatch<SetStateAction<boolean>>;
+    setDisplayResultadoModal: Dispatch<SetStateAction<boolean>>;
+
+    //* THIS WAY WE CAN "RESET" AND REFETCH THE DATA
+    updateIDTrabajoModificar: (nuevaID: number) => void;
 }
 
-//* THIS GOES TO ModifyServicioFrame
-export interface IServicioModificadoData {
-    nuevoNombre: string;
-    nuevoPrecio: number;
+export interface ITrabajoEliminar {
+    idTrabajo: number;
+
+    //! IMPORTANT TO DISPLAY THE RESULT OF THE OPERATION
+    setResultadoPeticion: Dispatch<SetStateAction<string>>;
+    setDisplayResultadoModal: Dispatch<SetStateAction<boolean>>;
+
+    //* THIS WAY WE CAN REFETCH THE DATA
+    updateIDTrabajoModificar: (nuevaID: number) => void;
 }
 
-export interface IModifyServicioFrameProps {
-    modoInterfaz: modoInterfazServicios;
-    coleccionServicios: IServicioIDData;
-    nombreOriginalModificar: string;
-    nuevoServicioData: MutableRefObject<IServicioModificadoData>;
-}
-
-export type modoInterfazServicios = 'AGREGAR' | 'MODIFICAR' | 'ELIMINAR';
-
+//* -------------------------------------------------------------------
+//* -------------------------------------------------------------------
+//* EACH FRAME PROPS --------------------------------------------------
+//* -------------------------------------------------------------------
+//* -------------------------------------------------------------------
+export interface IModifyServicioFrameProps {}
 export interface IMainServiciosFrameProps {
-    serviciosGuardados: IServicioData[];
-
-    modoInterfaz: modoInterfazServicios;
-    mainServicioSetter: Dispatch<SetStateAction<string>>;
-    mainPrecioSetter: Dispatch<SetStateAction<number>>
-    modoSetter: Dispatch<SetStateAction<modoInterfazServicios>>;
-    datosServicioEnviar: IServicioDataToSend;
+    //* PARA LA FUNCION DE AGREGAR Y MODIFICAR TRABAJO
+    setDisplayModalResultado: Dispatch<SetStateAction<boolean>>
+    setResultadoPeticion: Dispatch<SetStateAction<string>>;
 }
-
 export interface IListaServGuardadosFrameProps {
-    serviciosGuardados: IServicioData[];
+    //* PARA LA FUNCION DE ELIMINAR TRABAJO
+    setDisplayModalResultado: Dispatch<SetStateAction<boolean>>
+    setResultadoPeticion: Dispatch<SetStateAction<string>>;
 }
+//* -------------------------------------------------------------------
+//* -------------------------------------------------------------------
+//* -------------------------------------------------------------------
 
 
+
+
+//* -------------------------------------------------------------------
+//* -------------------------------------------------------------------
+//* OBJECTS WE SEND TO THE BACKEND ------------------------------------
+//* -------------------------------------------------------------------
+//* -------------------------------------------------------------------
 //? IN THE BACKEND WE CHECK THE DATA SO WE MUST FULFILL THE INTERFACES
 
 export interface IServicioBodyRequestFormat { 
-    descripcion: string;
-    valor_unitario: number;
-}
-
-export interface IModificarServicioDataEnviar { 
-    old_servicio: IServicioBodyRequestFormat;
-    new_servicio: IServicioBodyRequestFormat;
+    id:                 number;
+    detalle_servicio:   string;
+    equipo:             string;
+    codigo:             string;
+    info_adicional:     string;
+    valor:              number;
+    fecha_realizacion:  string;
 }

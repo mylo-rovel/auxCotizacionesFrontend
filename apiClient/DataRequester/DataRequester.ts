@@ -1,13 +1,20 @@
 import { 
     IServicioData, IProviderData, IRawProviderData,
-    IServicioBodyRequestFormat, IModificarServicioDataEnviar, 
-    IGeneralRequestResult, IClienteRut, IInputClienteDataEnviar, ICotizacionEnviar
+    IServicioBodyRequestFormat, 
+    IClienteRut, IInputClienteDataEnviar, ICotizacionEnviar
 } from "models";
 import { getEmptyClienteData } from "utils";
 
+type httpMethodOption = 'get' | 'post' | 'put' | 'patch' | 'delete';
 
 export class DataRequester {
     private static baseServerURL = "http://localhost:4000/api/data";
+
+    //*---------------------------------------------------------------------------------
+    //*---------------------------------------------------------------------------------
+    //* GET INFO -----------------------------------------------------------------------
+    //*---------------------------------------------------------------------------------
+    //*---------------------------------------------------------------------------------
 
     public static async getProviderData(): Promise<IProviderData> {
         const objToReturn: IProviderData = {
@@ -40,6 +47,7 @@ export class DataRequester {
         }
     }
 
+
     public static async getListaRuts(): Promise<IClienteRut[]> {
         const urlToFetch = `${DataRequester.baseServerURL}/clientes/`;
         try {
@@ -62,8 +70,8 @@ export class DataRequester {
         }
     }
 
-    public static async getListaServicios(): Promise<IServicioData[]> {
-        const urlToFetch = `${DataRequester.baseServerURL}/servicios`;
+    public static async getListaServicios(fechaObjetivo: string): Promise<IServicioData[]> {
+        const urlToFetch = `${DataRequester.baseServerURL}/servicios/${fechaObjetivo}`;
         try {
             const fetchedData: IServicioData[] = await fetch(urlToFetch).then(data => data.json());
             return fetchedData;
@@ -73,117 +81,101 @@ export class DataRequester {
         }
     }
 
-    public static async agregarServicioNuevo(servicioToSend: IServicioBodyRequestFormat): Promise<IGeneralRequestResult> {
+    public static async getTrabajoPorID(idBuscar: number): Promise<IServicioData | null> {
+        const urlToFetch = `${DataRequester.baseServerURL}/servicios/especificos/${idBuscar}`;
+        try {
+            const fetchedData: IServicioData | null = await fetch(urlToFetch).then(data => data.json());
+            return fetchedData;
+        }
+        catch {
+            return null;
+        }
+    }
+
+    //*---------------------------------------------------------------------------------
+    //*---------------------------------------------------------------------------------
+    //*---------------------------------------------------------------------------------
+    //*---------------------------------------------------------------------------------
+
+
+
+
+
+    
+    //*---------------------------------------------------------------------------------
+    //*---------------------------------------------------------------------------------
+    //* CORE OF EACH REQUEST THAT MODIFY DATA ------------------------------------------    
+    //*---------------------------------------------------------------------------------
+    //*---------------------------------------------------------------------------------
+    private static async performRequest<payloadType>(payloadToSend: payloadType, urlToFetch: string, method: httpMethodOption, errorDefaultMessage: string) {
         // const JWToken = window.localStorage.getItem("JWToken");
-        const postConfig = { 
-            method: 'post',
-            body: JSON.stringify(servicioToSend),
+        const requestConfig = { 
+            //TODO: FIX THIS AFTER FINDING OUT WHY THE BACKEND ONLY WORKS WITH THIS 2
+            method: (method === 'get') ? 'get' : 'post',
+            body: JSON.stringify(payloadToSend),
             headers: { 
                 'Content-Type': 'application/json',
                 // 'authorization': JWToken
             }
         };
-        const urlToFetch = `${DataRequester.baseServerURL}/servicios/crear`;
-        const fetchedData: string = await fetch(urlToFetch, postConfig).then(data => data.json()).catch(err => err);
-        if (typeof fetchedData === 'string') {
-            // return fetchedData;
-            return {
-                operationResultStr: fetchedData,
-                operationWasSuccess: true,
-                payload: ''
-            };
-        }
-        // return 'ERROR EN LA PETICIÓN DE AGREGAR SERVICIO';
-        return {
-            operationResultStr: 'ERROR EN LA PETICIÓN DE AGREGAR SERVICIO',
-            operationWasSuccess: false,
-            payload: ''
-        };
+        const fetchedData = await fetch(urlToFetch, requestConfig).then(data => data.json()).catch(err => err);
+        // return String(fetchedData);
+        return (typeof fetchedData === 'string') ? fetchedData : errorDefaultMessage;
     }
 
 
-    public static async modificarServicioGuardado(serviciosToSend: IModificarServicioDataEnviar): Promise<IGeneralRequestResult> {
-        // const JWToken = window.localStorage.getItem("JWToken");
-        const postConfig = { 
-            //? this should be: method: 'patch',  (backend problems)
-            method: 'post',
-            body: JSON.stringify(serviciosToSend),
-            headers: { 
-                'Content-Type': 'application/json',
-                // 'authorization': JWToken
-            }
-        };
+    //*---------------------------------------------------------------------------------
+    //*---------------------------------------------------------------------------------
+    //*---------------------------------------------------------------------------------
+    //*---------------------------------------------------------------------------------
+    
+    
+    //* --------------------------------------------------------------------------------
+    //* --------------------------------------------------------------------------------
+    //*  AGREGAR - MODIFICAR - BORRAR TRABAJOS -----------------------------------------
+    //* --------------------------------------------------------------------------------
+    //* --------------------------------------------------------------------------------
+    public static async agregarServicioNuevo(servicioToSend: IServicioBodyRequestFormat) {
+        const urlToFetch = `${DataRequester.baseServerURL}/servicios/`;
+        const httpMethod = 'post';
+        const defaultErrorMsg = 'ERROR EN LA PETICIÓN DE CREAR REGISTRO DE TRABAJO';
+        return DataRequester.performRequest(servicioToSend, urlToFetch, httpMethod, defaultErrorMsg);
+    }
+
+
+    public static async modificarServicioGuardado(servicioToSend: IServicioBodyRequestFormat) {
+        //* SI ES MENOR A 1, ENTONCES NO ES UN TRABAJO GUARDADO EN LA BASE DE DATOS
+        if (servicioToSend.id < 1) return 'ERROR EN LA PETICIÓN DE ELIMINAR SERVICIO';
+
         const urlToFetch = `${DataRequester.baseServerURL}/servicios/modificar`;
-        const fetchedData: unknown = await fetch(urlToFetch, postConfig).then(data => data.json()).catch(err => err);
-        if (typeof fetchedData === 'string') {
-            // return fetchedData;
-            return {
-                operationResultStr: fetchedData,
-                operationWasSuccess: true,
-                payload: ''
-            };
-        }
-        // return 'ERROR EN LA PETICIÓN DE MODIFICAR SERVICIO';
-        return {
-            operationResultStr: 'ERROR EN LA PETICIÓN DE MODIFICAR SERVICIO',
-            operationWasSuccess: false,
-            payload: ''
-        };
+        const httpMethod = 'patch';
+        const defaultErrorMsg = 'ERROR EN LA PETICIÓN DE MODIFICAR TRABAJO';
+        return DataRequester.performRequest(servicioToSend, urlToFetch, httpMethod, defaultErrorMsg);
     }
 
-    public static async borrarServicioGuardado(servicioToSend: IServicioBodyRequestFormat): Promise<IGeneralRequestResult> {
-        // const JWToken = window.localStorage.getItem("JWToken");
-        const postConfig = { 
-            //? this should be: method: 'delete',  (backend problems)
-            method: 'post',
-            body: JSON.stringify(servicioToSend),
-            headers: { 
-                'Content-Type': 'application/json',
-                // 'authorization': JWToken
-            }
-        };
+    public static async borrarServicioGuardado(idTrabajoBorrar: number) {
+        //* SI ES MENOR A 1, ENTONCES NO ES UN TRABAJO GUARDADO EN LA BASE DE DATOS
+        if (idTrabajoBorrar < 1) return 'ERROR EN LA PETICIÓN DE ELIMINAR SERVICIO';
+
+        const payloadToSend = {id: idTrabajoBorrar};
         const urlToFetch = `${DataRequester.baseServerURL}/servicios/borrar`;
-        const fetchedData: string = await fetch(urlToFetch, postConfig).then(data => data.json()).catch(err => err);
-        if (typeof fetchedData === 'string') {
-            // return fetchedData;
-            return {
-                operationResultStr: fetchedData,
-                operationWasSuccess: true,
-                payload: ''
-            };
-        }
-        // return 'ERROR EN LA PETICIÓN DE ELIMINAR SERVICIO';
-        return {
-            operationResultStr: 'ERROR EN LA PETICIÓN DE ELIMINAR SERVICIO',
-            operationWasSuccess: false,
-            payload: ''
-        };
+        const httpMethod = 'delete';
+        const defaultErrorMsg = 'ERROR EN LA PETICIÓN DE ELIMINAR REGISTRO DE TRABAJO';
+        return DataRequester.performRequest(payloadToSend, urlToFetch, httpMethod, defaultErrorMsg);
     }
 
-    public static async enviarDatosCotizacion(ensambledObjToSend: ICotizacionEnviar): Promise<IGeneralRequestResult> {
+
+    //* --------------------------------------------------------------------------------
+    //* --------------------------------------------------------------------------------
+    //* --------------------------------------------------------------------------------
+    //* --------------------------------------------------------------------------------
+    //* --------------------------------------------------------------------------------
+
+
+    public static async enviarDatosCotizacion(ensambledObjToSend: ICotizacionEnviar) {
         const urlToFetch = `${DataRequester.baseServerURL}/cotizaciones/registrar`;
-        const postConfig = { 
-            method: 'post',
-            body: JSON.stringify(ensambledObjToSend),
-            headers: { 
-                'Content-Type': 'application/json',
-                // 'authorization': JWToken
-            }
-        };
-        const fetchedData: string = await fetch(urlToFetch, postConfig).then(data => data.json()).catch(err => err);
-        if (typeof fetchedData === 'string') {
-            // return fetchedData;
-            return {
-                operationResultStr: fetchedData,
-                operationWasSuccess: true,
-                payload: ''
-            };
-        }
-        // return 'ERROR AL GUARDAR LA COTIZACIÓN';
-        return {
-            operationResultStr: 'ERROR AL GUARDAR LA COTIZACIÓN',
-            operationWasSuccess: false,
-            payload: ''
-        };
+        const httpMethod = 'post';
+        const defaultErrorMsg = 'ERROR AL GUARDAR DATOS COTIZACION';
+        return DataRequester.performRequest(ensambledObjToSend, urlToFetch, httpMethod, defaultErrorMsg);
     }
 }

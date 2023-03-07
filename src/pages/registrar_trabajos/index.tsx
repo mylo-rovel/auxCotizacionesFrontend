@@ -1,9 +1,10 @@
 import { GetStaticProps } from 'next';
 
 import { NextPageWithLayout } from "../_app";
-import { IServiciosPageProps } from "../../../models";
-import { MainLayout } from '../../../components/layouts';
+import { IServiciosPageProps } from "models";
+import { MainLayout } from 'components/layouts';
 import { ServiciosFrame } from 'components/singles';
+import { ContextProvidersWrapper } from "context/ContextWrapper";
 
 
 const ServiciosPage: NextPageWithLayout<IServiciosPageProps> = (props) => {
@@ -16,9 +17,11 @@ const ServiciosPage: NextPageWithLayout<IServiciosPageProps> = (props) => {
 
 ServiciosPage.getLayout = function getLayout(page:JSX.Element){
   return(
-    <MainLayout title="AuxiliarCotizaciones">
-      {page}
-    </MainLayout>
+    <ContextProvidersWrapper>
+      <MainLayout title="Auxiliar Registro Trabajos">
+        {page}
+      </MainLayout>
+    </ContextProvidersWrapper>
   )
 }
 
