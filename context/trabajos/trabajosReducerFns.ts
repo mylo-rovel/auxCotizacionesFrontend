@@ -52,3 +52,28 @@ export const setDisplayCalendarModal = (dispatch: Dispatch<trabajosReducerAction
     }
     dispatch(dispatchArg);
 }
+
+
+export const updatePrevFechaTrabajoEscogida = (dispatch: Dispatch<trabajosReducerActions> | null = null) => (newFecha: string) => {
+    //* DE ESTA FORMA, PODEMOS PONER ESTA FUNCION SIN DISPATCH EN EL 
+    //* OBJETO ESTADO INICIAL O ESTADO POR DEFECTO
+    if (dispatch === null) return;
+
+    const dispatchArg: trabajosReducerActions = {
+        type: '[Trabajo] Update-Prev_fechaTrabajo',
+        payload_prevFechaTrabajo: newFecha
+    }
+    dispatch(dispatchArg);
+}
+
+export const updateIdCotizacionRecibida = (dispatch: Dispatch<trabajosReducerActions> | null = null) => (newIdCotizacion: number) => {
+    //* DE ESTA FORMA, PODEMOS PONER ESTA FUNCION SIN DISPATCH EN EL 
+    //* OBJETO ESTADO INICIAL O ESTADO POR DEFECTO
+    if (dispatch === null) return;
+
+    const dispatchArg: trabajosReducerActions = {
+        type: '[Trabajo] Update-CotizacionRecibidaId',
+        payload_nuevaCotizacionId: newIdCotizacion
+    }
+    dispatch(dispatchArg);
+}

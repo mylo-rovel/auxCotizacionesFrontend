@@ -29,6 +29,18 @@ export const trabajosReducer = (state: ITrabajosContextState, action: trabajosRe
             }
             return proxyState;
 
+        case '[Trabajo] Update-Prev_fechaTrabajo':
+            if (typeof action.payload_prevFechaTrabajo !== 'undefined') {            
+                proxyState.prevFechaTrabajoEscogida = action.payload_prevFechaTrabajo;
+            }
+            return proxyState;
+
+        case '[Trabajo] Update-CotizacionRecibidaId':
+            if (typeof action.payload_nuevaCotizacionId !== 'undefined') {            
+                proxyState.nuevaCotizacionID = action.payload_nuevaCotizacionId;
+            }
+            return proxyState;            
+
         default:
             //? THIS WAY THE STATE IS EXACTLY THE SAME. NO CHANGES (EVEN THE REFERENCE IS THE SAME)
             return state;

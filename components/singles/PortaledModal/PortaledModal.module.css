@@ -17,6 +17,8 @@
     width: fit-content;
     height: fit-content;
 
+    max-width: 40vw;
+
     padding: 0.5rem;
     border-radius: 0.5rem;
     border: solid black 1px;

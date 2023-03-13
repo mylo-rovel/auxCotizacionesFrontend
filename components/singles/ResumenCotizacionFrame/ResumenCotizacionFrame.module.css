@@ -15,7 +15,7 @@
     padding: 0.5rem;
 }
 
-
+/** ESTILANDO LA TABLA -------------------------------------------------------------- */
 .resumen-cotizacion-header-container .resumen-header-values{
     display: flex;
     justify-content: space-around;
@@ -31,8 +31,6 @@
     margin: 0.5rem 0;
 }
 
-
-
 .resumen-cliente-container-values {
     display: flex;
     flex-wrap: wrap;
@@ -44,10 +42,12 @@
 
 
 
+/** ESTILANDO LOS BOTONES FINALES ---------------------------------------------- */
+.download-cotizacion-button-container,
 .final-send-data-button-container {
     width: fit-content;
     margin: 0 auto;
-    margin-top: 1rem;
+    margin-top: 0rem;
 }
 
 .final-send-data-button  {
@@ -63,6 +63,7 @@
     transition: all 0.4s;
 }
 
+.download-cotizacion-button-container:hover,
 .final-send-data-button:hover {
     background-color: transparent;
     opacity: 1;
@@ -72,4 +73,18 @@
     padding-left: 1rem;
     padding-right: 1rem;
     cursor: pointer;
+}
+
+.download-cotizacion-button-container {
+    display: flex;
+    align-items: center;
+    transition: all 0.4s;
+}
+
+.download-cotizacion-button-container {
+    background-color: transparent;
+    border: 0;
+    border-top: solid rgb(230, 230, 230) 1px;
+    border-bottom: solid rgb(230, 230, 230) 1px;
+    transition: all 0.4s;
 }

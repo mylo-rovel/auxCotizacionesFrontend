@@ -1,19 +1,19 @@
 import { TextField } from '@mui/material';
 import { FC, useState, useEffect, useContext, useRef, Dispatch, SetStateAction } from 'react';
 
-
+import { maximumLenghts } from 'utils';
 import { DataRequester } from 'apiClient';
 import { TrabajosContext } from "context/trabajos";
 import styles from './MainServiciosFrame.module.css';
-import { guardarTrabajo, generateEmptyNewTrabajo, defaultTrabajo_INITIAL_ID } from 'utils';
-import { IMainServiciosFrameProps, INewTrabajo, IServicioBodyRequestFormat, newTrabajo_prop } from 'models';
+import { IMainServiciosFrameProps, INewTrabajo, newTrabajo_prop } from 'models';
+import { guardarTrabajo, generateEmptyNewTrabajo, defaultTrabajo_INITIAL_ID, getFechaBonitaParaMostrar } from 'utils';
 
 // ---------------------------------------------------------------
 // ---------------------------------------------------------------
 
 export const MainServiciosFrame: FC<IMainServiciosFrameProps> = (props) => {
     const { setResultadoPeticion, setDisplayModalResultado } = props;
-    const { fechaTrabajoEscogida, setDisplayCalendarModal, updateIDTrabajoModificar } = useContext(TrabajosContext);
+    const { fechaTrabajoEscogida, setDisplayCalendarModal, updateIDTrabajoModificar } = useContext(TrabajosContext);    
 
     //* THIS WAY, WE WILL REACH AN SPECIFIC POINT OF THE CuerpoGuardarTrabajo useEffect CODE
     //* WHICH WILL INDEED, RESET ALL THE FIELDS AND THE
@@ -32,7 +32,7 @@ export const MainServiciosFrame: FC<IMainServiciosFrameProps> = (props) => {
             </section>
 
             <section className={styles['main-frame-title-container']}>
-                <h1 onClick={() => setDisplayCalendarModal(true)}>{fechaTrabajoEscogida}</h1>
+                <h1 onClick={() => setDisplayCalendarModal(true)}>{getFechaBonitaParaMostrar(fechaTrabajoEscogida)}</h1>
             </section>
 
             <section className={`${styles['cambiar-fecha-button-container']}`}>
@@ -87,9 +87,10 @@ const CuerpoGuardarTrabajo:FC<CuerpoGuardarTrabajoProps> = (props) => {
                 }
             }
             //* COMO ESTA FUNCIÓN ES ASYNC, LA ACTUALIZACIÓN DE ESTE OBJETO NO OCURRE
-            //* EN EL MOMENTO AL INSTANTE EN EL QUE ESCRIBIMOS QUE SE ACTUALICE 
-            //* => DEBEMOS USAR UN SETTER DE useState PARA CAUSAR UN RERENDER
-            //*    YA QUE LA INFO QUE USAMOS NO SE ESTÁ ACTUALIZANDO CUANDO QUEREMOS
+            //* EN EL INSTANTE EN EL QUE ESCRIBIMOS.
+            //* => PARA QUE SE ACTUALICE, DEBEMOS USAR UN SETTER DE useState PARA 
+            //*    CAUSAR UN RERENDER YA QUE LA INFO QUE USAMOS NO SE ESTÁ ACTUALIZANDO 
+            //*    CUANDO QUEREMOS
             //TODO: RECORDAR QUE ESTE SETTER AYUDA A QUE RERENDERICEMOS PARA TENGAMOS
             //TODO: DISPONIBLE LA NUEVA INFO DE newTrabajoObjREF.current QUE ESCRIBIMOS ARRIBA
             setPrevIDModificar(idTrabajoModificar);
@@ -113,7 +114,9 @@ const CuerpoGuardarTrabajo:FC<CuerpoGuardarTrabajoProps> = (props) => {
         const proxyObjToUse = { ...newTrabajoObjREF.current };
         if (isNumber) {
             const newNumberValue = Number(rawNewValue);            
-            if (newNumberValue >= 0) proxyObjToUse[prop] = newNumberValue;
+            if ((newNumberValue >= 0) && (rawNewValue.length < maximumLenghts.maxValorLength)){
+                proxyObjToUse[prop] = newNumberValue;
+            }
         }else {
             proxyObjToUse[prop] = rawNewValue;
         }

@@ -3,9 +3,8 @@ import { ChangeEvent, FC, useState, useEffect, SetStateAction, Dispatch } from '
 
 import { DataRequester } from 'apiClient';
 import styles from "./ClienteFrame.module.css";
-import { maximumLenghts, ultimoRutManagerObj } from "utils";
-import { getEmptyCotiValoresExtra, getEmptyClienteData, testIfRutIsValid } from "utils";
 import { update_CotiValoresObj_Value, updateCotizacionValoresExtra } from './ClienteFrameAux';
+import { getEmptyCotiValoresExtra, getEmptyClienteData, testIfRutIsValid, maximumLenghts, ultimoRutManagerObj } from "utils";
 import { IClienteFrameProps, IValoresExtraCotizacion, IInputClienteDataEnviar, IClienteRutForAutocomplete, IClienteRut, IClienteIDPorRut } from "models";
 
 export interface IValoresExtraYCliente extends IValoresExtraCotizacion, IInputClienteDataEnviar {}
@@ -35,8 +34,8 @@ export const ClienteFrame: FC<IClienteFrameProps> = ({parent_clientData, parent_
             setCotizacionValoresExtra((prevState) => {
                 const dummyClientDataJSON = JSON.stringify(getEmptyClienteData());
                 const parentClientDataJSON = JSON.stringify(parent_clientData);                
-                //* IF BOTH ARE EQUAL => parentClientDataJSON IS EMPTY
-                //* SO WE DONT WANT TO UPDATE OUR OBJECT
+                //* SI dummyClientDataJSON Y parentClientDataJSON SON IGUALES, ESO SIGNIFICA
+                //* QUE parentClientDataJSON ESTÁ VACÍO, ASI QUE NO ACTUALIZAMOS EL OBJETO
                 if (dummyClientDataJSON === parentClientDataJSON) {
                     return prevState;
                 }
@@ -78,35 +77,33 @@ export const ClienteFrame: FC<IClienteFrameProps> = ({parent_clientData, parent_
     }, []);
 
 
-    //TODO: GUARDAR DATOS
-    //TODO: PREGUNTAR SI ESTÁ SEGURO DE QUE QUIERE MODIFICAR LOS DATOS
-    //TODO: (SABEMOS QUE EL CLIENTE FUE MODIFICADO POR cotizacionValoresExtra.clienteEsNuevo)
     const saveClienteData = () => {
-        if (rutIsValid){
-            const clienteDataEnviar: IInputClienteDataEnviar = {
-                id: 1,
-                nombre: cotizacionValoresExtra.nombre,
-                rut: cotizacionValoresExtra.rut.toUpperCase(),
-                email: cotizacionValoresExtra.email,
-                telefono: cotizacionValoresExtra.telefono,
-                direccion: cotizacionValoresExtra.direccion,
-                contacto: cotizacionValoresExtra.contacto,
-                created_at: '',
-                updated_at: ''
-            };
+        //TODO: NO OLVIDAR QUE YA NO USAMOS LA CONDICIONAL PARA EVITAR TENER QUE 
+        //TODO: INGRESAR UN RUT VÁLIDO PARA MODIFICAR LOS CAMPOS
+        // if (rutIsValid){}
+        const clienteDataEnviar: IInputClienteDataEnviar = {
+            id: 1,
+            nombre: cotizacionValoresExtra.nombre,
+            rut: cotizacionValoresExtra.rut.toUpperCase(),
+            email: cotizacionValoresExtra.email,
+            telefono: cotizacionValoresExtra.telefono,
+            direccion: cotizacionValoresExtra.direccion,
+            contacto: cotizacionValoresExtra.contacto,
+            created_at: '',
+            updated_at: ''
+        };
 
-            parent_clienteDataSetter(clienteDataEnviar);
-            parent_cotiValExtaSetter((prevState) => {
-                return {
-                    ...prevState,
-                    clienteEsNuevo: cotizacionValoresExtra.clienteEsNuevo,
-                    idClienteSiEsViejo: cotizacionValoresExtra.idClienteSiEsViejo,
-                    formaPago: cotizacionValoresExtra.formaPago,
-                }
-            });
-
-            ultimoRutManagerObj.saveRutInLocalStorage(clienteDataEnviar.rut);
-        }
+        parent_clienteDataSetter(clienteDataEnviar);
+        parent_cotiValExtaSetter((prevState) => {
+            return {
+                ...prevState,
+                clienteEsNuevo: cotizacionValoresExtra.clienteEsNuevo,
+                idClienteSiEsViejo: cotizacionValoresExtra.idClienteSiEsViejo,
+                formaPago: cotizacionValoresExtra.formaPago,
+            }
+        });
+        if (rutIsValid) ultimoRutManagerObj.saveRutInLocalStorage(clienteDataEnviar.rut);
+        // ultimoRutManagerObj.saveRutInLocalStorage(clienteDataEnviar.rut);
     }
     
     return (
@@ -121,12 +118,23 @@ export const ClienteFrame: FC<IClienteFrameProps> = ({parent_clientData, parent_
                 </section>
             </article>
             <RutInputRow inputValueProp={cotizacionValoresExtra.rut} setModificarClienteAntiguo={setModificarClienteAntiguo} rutIsValid={rutIsValid} listaRutsAutocomplete={listaRutsAutocomplete} setRutIsValid={setRutIsValid}  diccionarioRuts_IDs={diccionarioRuts_IDs} setCotizacionValoresExtra={setCotizacionValoresExtra}/>
-            <ClientDataRow labelName='Nombre'                       onChangeFn={update_CotiValoresObj_Value(setCotizacionValoresExtra, 'nombre')}    inputValueProp={cotizacionValoresExtra.nombre}      inputType='text'   disabled={modificarClienteAntiguo && rutIsValid} placeholderStr='Ingresar nombre del cliente'       />
-            <ClientDataRow labelName='email'                        onChangeFn={update_CotiValoresObj_Value(setCotizacionValoresExtra, 'email')}     inputValueProp={cotizacionValoresExtra.email}       inputType='email'  disabled={modificarClienteAntiguo && rutIsValid} placeholderStr='Ingresar email del cliente'        />
-            <ClientDataRow labelName='Telefono (ejemplo: 912341234)'onChangeFn={update_CotiValoresObj_Value(setCotizacionValoresExtra, 'telefono')}  inputValueProp={cotizacionValoresExtra.telefono}    inputType='number' disabled={modificarClienteAntiguo && rutIsValid} placeholderStr='Ingresar telefono del cliente'     />
-            <ClientDataRow labelName='Direccion'                    onChangeFn={update_CotiValoresObj_Value(setCotizacionValoresExtra, 'direccion')} inputValueProp={cotizacionValoresExtra.direccion}   inputType='text'   disabled={modificarClienteAntiguo && rutIsValid} placeholderStr='Ingresar dirección del cliente'    />
-            <ClientDataRow labelName='Contacto'                     onChangeFn={update_CotiValoresObj_Value(setCotizacionValoresExtra, 'contacto')}  inputValueProp={cotizacionValoresExtra.contacto}    inputType='text'   disabled={modificarClienteAntiguo && rutIsValid} placeholderStr='Ingresar contacto del cliente'     />
-            <ClientDataRow labelName='FormaPago (ejemplo: efectivo)'onChangeFn={update_CotiValoresObj_Value(setCotizacionValoresExtra, 'formaPago')} inputValueProp={cotizacionValoresExtra.formaPago}   inputType='text'   disabled={modificarClienteAntiguo && rutIsValid} placeholderStr='Ingresar forma de pago del cliente'/>
+            <ClientDataRow labelName='Nombre'                       onChangeFn={update_CotiValoresObj_Value(setCotizacionValoresExtra, 'nombre')}    inputValueProp={cotizacionValoresExtra.nombre}      inputType='text'   disabled={modificarClienteAntiguo} placeholderStr='Ingresar nombre del cliente'        />
+            <ClientDataRow labelName='E-mail'                       onChangeFn={update_CotiValoresObj_Value(setCotizacionValoresExtra, 'email')}     inputValueProp={cotizacionValoresExtra.email}       inputType='email'  disabled={modificarClienteAntiguo} placeholderStr='Ingresar e-mail del cliente'        />
+            <ClientDataRow labelName='Telefono (ejemplo: 912341234)'onChangeFn={update_CotiValoresObj_Value(setCotizacionValoresExtra, 'telefono')}  inputValueProp={cotizacionValoresExtra.telefono}    inputType='number' disabled={modificarClienteAntiguo} placeholderStr='Ingresar telefono del cliente'      />
+            <ClientDataRow labelName='Direccion'                    onChangeFn={update_CotiValoresObj_Value(setCotizacionValoresExtra, 'direccion')} inputValueProp={cotizacionValoresExtra.direccion}   inputType='text'   disabled={modificarClienteAntiguo} placeholderStr='Ingresar dirección del cliente'     />
+            <ClientDataRow labelName='Contacto'                     onChangeFn={update_CotiValoresObj_Value(setCotizacionValoresExtra, 'contacto')}  inputValueProp={cotizacionValoresExtra.contacto}    inputType='text'   disabled={modificarClienteAntiguo} placeholderStr='Ingresar contacto del cliente'      />
+            <ClientDataRow labelName='FormaPago (ejemplo: efectivo)'onChangeFn={update_CotiValoresObj_Value(setCotizacionValoresExtra, 'formaPago')} inputValueProp={cotizacionValoresExtra.formaPago}   inputType='text'   disabled={modificarClienteAntiguo} placeholderStr='Ingresar forma de pago del cliente' />
+
+            {/* ESTE BLOQUE TIENE disabled={modificarClienteAntiguo && rutIsValid} EN LUGAR DE disabled={modificarClienteAntiguo} */}
+            {/* ESTO ES PARA NO TENER LA RESTRICCION DE TENER UN RUT VALIDO PARA MODIFICAR LOS CAMPOS */}
+            {/* 
+            <ClientDataRow labelName='Nombre'                       onChangeFn={update_CotiValoresObj_Value(setCotizacionValoresExtra, 'nombre')}    inputValueProp={cotizacionValoresExtra.nombre}      inputType='text'   disabled={modificarClienteAntiguo && rutIsValid} placeholderStr='Ingresar nombre del cliente'        />
+            <ClientDataRow labelName='E-mail'                       onChangeFn={update_CotiValoresObj_Value(setCotizacionValoresExtra, 'email')}     inputValueProp={cotizacionValoresExtra.email}       inputType='email'  disabled={modificarClienteAntiguo && rutIsValid} placeholderStr='Ingresar e-mail del cliente'        />
+            <ClientDataRow labelName='Telefono (ejemplo: 912341234)'onChangeFn={update_CotiValoresObj_Value(setCotizacionValoresExtra, 'telefono')}  inputValueProp={cotizacionValoresExtra.telefono}    inputType='number' disabled={modificarClienteAntiguo && rutIsValid} placeholderStr='Ingresar telefono del cliente'      />
+            <ClientDataRow labelName='Direccion'                    onChangeFn={update_CotiValoresObj_Value(setCotizacionValoresExtra, 'direccion')} inputValueProp={cotizacionValoresExtra.direccion}   inputType='text'   disabled={modificarClienteAntiguo && rutIsValid} placeholderStr='Ingresar dirección del cliente'     />
+            <ClientDataRow labelName='Contacto'                     onChangeFn={update_CotiValoresObj_Value(setCotizacionValoresExtra, 'contacto')}  inputValueProp={cotizacionValoresExtra.contacto}    inputType='text'   disabled={modificarClienteAntiguo && rutIsValid} placeholderStr='Ingresar contacto del cliente'      />
+            <ClientDataRow labelName='FormaPago (ejemplo: efectivo)'onChangeFn={update_CotiValoresObj_Value(setCotizacionValoresExtra, 'formaPago')} inputValueProp={cotizacionValoresExtra.formaPago}   inputType='text'   disabled={modificarClienteAntiguo && rutIsValid} placeholderStr='Ingresar forma de pago del cliente' /> 
+            */}
         </article>
     </>
     )
@@ -190,26 +198,31 @@ const RutInputRow: FC<IRutInputRowProps> = (inputProps) => {
             const ultimoRut = ultimoRutManagerObj.getUltimoRut_localStorage();
             setUltimoRutIngresado(ultimoRut);
         }
-
-        const rutIsValid = testIfRutIsValid(rutValue);
-        if (rutValue === '') { 
-            setRutResultClass('empty-rut-input');
-            inputProps.setRutIsValid(false);
-        }
-        else if (rutIsValid) { 
-            setRutResultClass('valid-rut');
-            inputProps.setRutIsValid(true);
-        }
-        else { 
-            setRutResultClass('invalid-rut');
-            inputProps.setRutIsValid(false);
-        }        
         
-        if (inputProps.inputValueProp !== '') {
-            setRutValue(inputProps.inputValueProp);
+        const setupByCheckingRutValidy = () => {
+            const rutIsValid = testIfRutIsValid(rutValue);
+            if (rutValue === '') { 
+                setRutResultClass('empty-rut-input');
+                inputProps.setRutIsValid(false);
+                return;
+            }
+            
+            if (rutIsValid) { 
+                setRutResultClass('valid-rut');
+                inputProps.setRutIsValid(true);
+                return;
+            }
+            else { 
+                setRutResultClass('invalid-rut');
+                inputProps.setRutIsValid(false);
+            }        
+            
+            if (inputProps.inputValueProp !== '') {
+                setRutValue(inputProps.inputValueProp);
+            }
         }
-
         setupUltimoRutGuardado();
+        setupByCheckingRutValidy();
     }, [rutValue]);
 
     const fetchClienteDataPorRut = async (rutCliente: string) => {
@@ -227,8 +240,11 @@ const RutInputRow: FC<IRutInputRowProps> = (inputProps) => {
                 fetchClienteDataPorRut(rutValueInput);                
             }else {
                 //* IF IS NOT ALREADY SAVED RUT, JUST USE TELL THAT THE CLIENT IS NEW
-                inputProps.setCotizacionValoresExtra((prevState) => ({...prevState, 
-                    rut:rutValueInput, clienteEsNuevo:true, idClienteSiEsViejo:1
+                inputProps.setCotizacionValoresExtra((prevState) => ({
+                    ...prevState, 
+                    rut:rutValueInput, 
+                    clienteEsNuevo:true, 
+                    idClienteSiEsViejo:1
                 }));
             };
             setRutValue(rutValueInput);
@@ -237,8 +253,13 @@ const RutInputRow: FC<IRutInputRowProps> = (inputProps) => {
 
     const switchModifyClienteFlag = () => inputProps.setModificarClienteAntiguo((prevState) => !prevState);
 
+
+    //? MINI COMPONENTS ------------------------------------------------------
+    //? ----------------------------------------------------------------------
     const ModificarClienteButton = () => {
-        if (!inputProps.rutIsValid) return <></>;
+        //TODO: NO OLVIDAR QUE YA NO USAMOS LA CONDICIONAL PARA EVITAR TENER QUE 
+        //TODO: INGRESAR UN RUT VÁLIDO PARA MODIFICAR LOS CAMPOS
+        // if (!inputProps.rutIsValid) return <></>;
         return (
         <>
             <div></div>
@@ -257,6 +278,9 @@ const RutInputRow: FC<IRutInputRowProps> = (inputProps) => {
             </label>
         </>)
     }
+    //? ----------------------------------------------------------------------
+    //? ----------------------------------------------------------------------
+
     return (
     <>
     <article className={`${styles['cliente-rut-input-row']}`}>

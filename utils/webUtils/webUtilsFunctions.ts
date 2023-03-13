@@ -6,7 +6,7 @@ import {
     IValoresExtraCotizacion, IServicioData, INewTrabajo, IServicioBodyRequestFormat, ITrabajoEliminar
 } from "models";
 import { Dispatch, SetStateAction } from "react";
-import { maximumLenghts } from "utils";
+import { maximumLenghts, testIfRutIsValid } from "utils";
 
 
 const obtenerObjetoTrabajoBienTipado = (newTrabajo: INewTrabajo, fecha_realizacion: string): IServicioBodyRequestFormat => {
@@ -150,16 +150,12 @@ export const getEmptyClienteData = (): IInputClienteDataEnviar => {
 export const getEmptyServicioSolicitado = (): IServicioSolicitado => {
     return {
         id: -1,
-        cantidad: 0,
-        codigo: '',
     }
 };
 
 export const getEmptyServicioRealizado = (): IServicioSolicitado => {
     return {
         id: -1,
-        cantidad: 0,
-        codigo: '',
     }
 };
 
@@ -169,7 +165,6 @@ export const getDummyServicioSolicitadoArr = (arrLength: number): IServicioSolic
         const dummyObj = getEmptyServicioSolicitado();
         const indexToUse = Math.min(index, opcionesID.length);
         dummyObj.id = opcionesID[indexToUse];
-        dummyObj.cantidad = indexToUse;
         return dummyObj;
     });
 };
@@ -209,7 +204,7 @@ const checkClienteData = (clienteData: IInputClienteDataEnviar, formaPago: strin
     
     //* EMAIL CORRECTO
     const regex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g;
-    if (!(regex.test(clienteData.rut))) return false;
+    if (!(regex.test(clienteData.email))) return false;
 
     return (
         (clienteData.nombre !== '') &&
@@ -225,12 +220,8 @@ const checkServiciosSolicitados = (serviciosSolicitados: IServicioSolicitado[]):
     return (
         serviciosSolicitados.every((servicioItem) => {
             const id = servicioItem.id;
-            const codigo = servicioItem.codigo;
-            const cantidad = servicioItem.cantidad;
             return (
-                (id > -1) &&
-                (codigo !== '') &&
-                (cantidad > 0)
+                (id > -1)
             )
         })
     );
@@ -240,73 +231,100 @@ interface IEnviarDatosCotizacion {
     ensambledObjToSend: ICotizacionEnviar;
     setResultadoOperacionStr: Dispatch<SetStateAction<string>>;
     setDisplayModal: Dispatch<SetStateAction<boolean>>;
-    setOperacionFueExitosa: Dispatch<SetStateAction<boolean>>;
+    updateIdCotizacionRecibida: (nuevaID: number) => void;
 }
 
 export const enviarDatosCotizacion = async (propsObj: IEnviarDatosCotizacion) => {
-    const {
-        ensambledObjToSend, setResultadoOperacionStr,
-        setDisplayModal, setOperacionFueExitosa } = propsObj;
+    const { ensambledObjToSend, setResultadoOperacionStr, setDisplayModal, updateIdCotizacionRecibida } = propsObj;
+    const { clienteData, serviciosSolicitados } = ensambledObjToSend;
 
-    // const clienteDataIsValid = checkClienteData(clienteData, formaPago);
-    // const serviciosSolicitadosAreValid = checkServiciosSolicitados(serviciosSolicitados);
-    // const dataEnviarAreValid = clienteDataIsValid && serviciosSolicitadosAreValid;
-    const {formaPago, clienteData, serviciosSolicitados} = ensambledObjToSend;
 
-    const clienteDataIsValid = (
-        (clienteData.nombre !== '') &&
-        (clienteData.rut !== '') &&
-        (clienteData.email !== '') &&
-        (clienteData.telefono > 0) &&
-        (clienteData.direccion !== '') &&
-        (formaPago !== '')
+    //* ---- CHEQUEAR QUE LAS FECHAS DE LA COTIZACIÓN NO SON '' -------------------
+    const {fechaCotizacion, fechaValidezCoti} = ensambledObjToSend;
+    if ((fechaCotizacion === '') || (fechaValidezCoti === '')) {
+        const mensajeError = 'ERROR. AL MENOS UNA DE LAS FECHAS FUE REINICIADA. REVISAR EN EL RESUMEN Y VOLVER A LOS CALENDARIOS';
+        setResultadoOperacionStr(mensajeError);
+        setDisplayModal(true);
+        return mensajeError;
+    }
+
+
+    const clienteDataIsInvalid = (
+        (clienteData.nombre === '')
+        // (clienteData.rut === '') ||
+        // (clienteData.email === '') ||
+        // (clienteData.telefono <= 0) ||
+        // (clienteData.direccion === '') ||
+        // (formaPago === '')
     );
-    if (!(clienteDataIsValid)) {
-        setResultadoOperacionStr('ERROR. ALGUNOS VALORES DEL CLIENTE ESTÁN VACÍOS');
-        setOperacionFueExitosa(false);
+    if (clienteDataIsInvalid) {
+        const mensajeError = 'ERROR. EL NOMBRE DEL CLIENTE ESTÁ VACÍO';
+        setResultadoOperacionStr(mensajeError);
         setDisplayModal(true);
-        return 'ERROR. ALGUNOS VALORES DEL CLIENTE ESTÁN VACÍOS';
+        return mensajeError;
     }
 
-    //* CHEQUEAR QUE EL TELEFONO NO ES MUY LARGO
-    if (`${clienteData.telefono}`.length > maximumLenghts.maxTelefonoLength) {
-        setResultadoOperacionStr('ERROR. VALOR TELEFONO MUY LARGO');
-        setOperacionFueExitosa(false);
-        setDisplayModal(true);
-        return 'ERROR. VALOR TELEFONO MUY LARGO';
+    //* ---- CHEQUEAR QUE EL RUT ES CORRECTO SI ES QUE LO INGRESARON -------------------
+    const rutCliente = clienteData.rut;
+    if (rutCliente.length > 0) {
+        //* SI ESCRIBIERON UN RUT, QUE AL MENOS ESTÉ BIEN ESCRITO
+        if (!(testIfRutIsValid(clienteData.email))) {
+            const mensajeError = 'ERROR. RUT INGRESADO ES INVÁLIDO (BÓRRELO O ESCRÍBALO BIEN)';
+            setResultadoOperacionStr(mensajeError);
+            setDisplayModal(true);
+            return mensajeError;
+        }
     }
-    //* --------------------------------------------------------------------------------
 
 
-    //* CHEQUEAR QUE EL EMAIL ES CORRECTO
+    //* ---- CHEQUEAR QUE EL EMAIL ES CORRECTO SI ES QUE LO INGRESARON ------------------
     const regex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g;
-    if (!(regex.test(clienteData.email))) {
-        setResultadoOperacionStr('ERROR. EMAIL INVÁLIDO');
-        setOperacionFueExitosa(false);
+    const emailCliente = clienteData.email;
+    if (emailCliente.length > 0) {
+        //* SI ESCRIBIERON UN EMAIL, QUE AL MENOS ESTÉ BIEN ESCRITO
+        if (!(regex.test(clienteData.email))) {
+            const mensajeError = 'ERROR. EMAIL INGRESADO ES INVÁLIDO (BÓRRELO O ESCRÍBALO BIEN)';
+            setResultadoOperacionStr(mensajeError);
+            setDisplayModal(true);
+            return mensajeError;
+        }
+    }
+
+    //* --------------------------------------------------------------------------------
+
+
+    //* ---- CHEQUEAR QUE EL TELEFONO NO SEA MUY LARGO ----------------------------------
+    const telefonoIsInvalid = String(clienteData.telefono).length > maximumLenghts.maxTelefonoLength
+    if (telefonoIsInvalid) {
+        const mensajeError = 'ERROR. VALOR TELEFONO MUY LARGO';
+        setResultadoOperacionStr(mensajeError);
         setDisplayModal(true);
-        return 'ERROR. EMAIL INVÁLIDO';
+        return mensajeError;
     }
     //* --------------------------------------------------------------------------------
 
 
-    //* CHEQUEAR QUE NO HAY FILAS DE SERVICIOS VACIAS
-    const allServiciosAreValid = serviciosSolicitados.every((servicioItem) => {
-        const id = servicioItem.id;
-        const codigo = servicioItem.codigo;
-        const cantidad = servicioItem.cantidad;
-        return ((id > -1) && (codigo !== '') && (cantidad > 0))
-    })
+    //* ---- CHEQUEAR QUE NO HAY FILAS DE SERVICIOS VACIAS -----------------------------
+    const allServiciosAreValid = serviciosSolicitados.every((servicioItem) => (servicioItem.id > -1));
     if (!allServiciosAreValid) {
-        setResultadoOperacionStr('ERROR. FILAS DE SERVICIOS SOLICITADOS VACÍAS');
-        setOperacionFueExitosa(false);
+        const mensajeError = 'ERROR. HAY FILAS DE TRABAJOS SOLICITADOS VACÍAS';
+        setResultadoOperacionStr(mensajeError);
         setDisplayModal(true);
-        return 'ERROR. FILAS DE SERVICIOS SOLICITADOS VACÍAS';
+        return mensajeError;
     }
     //* --------------------------------------------------------------------------------
+
+
 
     const operationResultStr = await DataRequester.enviarDatosCotizacion(ensambledObjToSend);
-    setResultadoOperacionStr(operationResultStr);
-    setOperacionFueExitosa(true);
+
+    const IDRecibida = Number(operationResultStr);
     setDisplayModal(true);
-    return operationResultStr;
+    if (IDRecibida > 0) {
+        setResultadoOperacionStr('Éxito al guardar. ID cotizacion' + IDRecibida);
+        updateIdCotizacionRecibida(IDRecibida);
+        return;
+    }
+    setResultadoOperacionStr(operationResultStr);
+    return;
 }

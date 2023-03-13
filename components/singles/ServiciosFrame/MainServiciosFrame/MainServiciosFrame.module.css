@@ -28,7 +28,7 @@
 
 .header-container section{
     /* background-color: red; */
-    /* width: fit-content; */
+    width: fit-content;
     flex: 0.33;
     display: flex;
     justify-content: center;

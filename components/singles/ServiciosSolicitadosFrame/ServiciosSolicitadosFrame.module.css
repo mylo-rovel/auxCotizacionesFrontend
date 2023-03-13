@@ -1,15 +1,16 @@
 .servicios-solicitados-container {
     min-width: 70vw;
-    max-width: 80vw;
-    height: 30vw;
-    /* height: fit-content; */
+    --column-max-width: 80vw;
+    max-width: var(--column-max-width);
+
+    /* height: 30vw; */
+    --column-max-height: 30vw;
+    --column-max-height: 65vh;
+    max-height: var(--column-max-height);
     overflow-y: scroll;
+
     margin: 0 auto;
     margin-top: 1rem;
-    /* padding: 0.45rem 0.55rem; */
-    
-    /* border: solid black 1px; */
-    /* border-radius: 5px; */
     
     --font-size-to-use: 1.35rem;
     font-size: var(--font-size-to-use);
@@ -17,12 +18,79 @@
     --base-column-width: 20%;
 }
 
-/** HACER QUE LA TABLA USE TODO EL ANCHO DEL CONTENEDOR */
+.servicio-solicitado-row,
+.the-very-title-of-the-table {
+    cursor: pointer;
+}
+/** --------------------------------------------------------------------------------------------  */
+/** --------------------------------------------------------------------------------------------  */
+/** --------------------------------------------------------------------------------------------  */
+
+
+
+
+/** ESTILANDO EL CALENDARIO MODAL --------------------------------------------------------------  */
+.calendar-frame {
+    height: fit-content;
+    width: fit-content;
+    padding: 0.25rem 0.5rem;
+}
+
+.calendar-frame div div button {
+    padding: 0 0.5rem;
+}
+
+.calendar-frame div,
+.calendar-frame button {
+    font-size: 1.35rem;
+}
+
+.calendar-frame abbr{
+    text-decoration: none;
+}
+/** --------------------------------------------------------------------------------------------  */
+/** --------------------------------------------------------------------------------------------  */
+/** --------------------------------------------------------------------------------------------  */
+
+
+
+/** ESTILANDO EL MODAL DEL AUTOCOMPLETE --------------------------------------------------------  */
+.modify-row-trabajo-portal-frame {
+    /* background-color: rgb(169, 255, 169); */
+    height: 12.5vw;
+    height: fit-content;
+    width: 30vw;
+    padding: 0.25rem 0.5rem;
+}
+.modify-row-trabajo-portal-frame h3 {
+    font-size: 1.5rem;
+}
+.modify-row-trabajo-portal-frame * {
+    margin-bottom: 0.5rem;
+}
+.modify-row-trabajo-portal-frame *:last-child {
+    margin-bottom: 0;
+}
+/** --------------------------------------------------------------------------------------------  */
+/** --------------------------------------------------------------------------------------------  */
+/** --------------------------------------------------------------------------------------------  */
+
+
+
+
+/** HACER QUE LA TABLA USE TODO EL ANCHO DEL CONTENEDOR ----------------------------------------- */
 .servicios-solicitados-container table {
     width: 100%;
 }
+/** --------------------------------------------------------------------------------------------  */
+/** --------------------------------------------------------------------------------------------  */
+/** --------------------------------------------------------------------------------------------  */
 
-/** ESTILANDO LAS COLUMNAS */
+
+
+
+
+/** ESTILANDO LAS COLUMNAS ---------------------------------------------------------------------- */
 .table-column-codigo {
     --codigo-column-extra-width: 0%;
     width: calc(var(--base-column-width) + var(--codigo-column-extra-width));
@@ -39,23 +107,34 @@
 }
 
 .table-column-info_adicional {
-    --cantidad-column-extra-width: -5%;
+    --cantidad-column-extra-width: 5%;
     width: calc(var(--base-column-width) + var(--cantidad-column-extra-width));
 }
 
 .table-column-valor {
-    --valor-column-extra-width: 0%;
+    --valor-column-extra-width: -5%;
     width: calc(var(--base-column-width) + var(--valor-column-extra-width));
 }
+/** --------------------------------------------------------------------------------------------  */
+/** --------------------------------------------------------------------------------------------  */
+/** --------------------------------------------------------------------------------------------  */
 
 
 
-/** DARLE UN CUADRITO A CADA ELEMENTO DE LA TABLA */
+
+
+/** DARLE UN CUADRITO A CADA ELEMENTO DE LA TABLA ----------------------------------------------- */
 .servicios-solicitados-container th, 
 .servicios-solicitados-container td {
     border:1px solid black;
-    padding: 0 0.25rem;
+    padding: 0 0.25rem;    
 }
+/** --------------------------------------------------------------------------------------------  */
+/** --------------------------------------------------------------------------------------------  */
+/** --------------------------------------------------------------------------------------------  */
+
+
+
 
 
 /** ESTILANDO LOS BOTONES (+) Y (-) */
@@ -92,30 +171,40 @@
     background-color: transparent;
     border: 0;
 }
+/** --------------------------------------------------------------------------------------------  */
+/** --------------------------------------------------------------------------------------------  */
+/** --------------------------------------------------------------------------------------------  */
 
 
 
-/** ESTILANDO LOS INPUT BOX */
-.servicio-solicitado-row input[type='text'],
-.servicio-solicitado-row input[type='number']{
-    width: 98%;
 
-    border: solid rgb(145, 145, 145) 1px;
-    border-left: 0;
-    border-right: 0;
-    
-    line-height: 3rem;
-    font-weight: bolder;
-    font-size: 1.4rem;
+
+
+
+
+/** ESTILANDO LAS FILAS ------------------------------------------------------------------------- */
+.table-cell-codigo,
+.table-cell-detalletrabajo,
+.table-cell-equipo,
+.table-cell-infoadicional,
+.table-cell-valor {    
+    overflow-x: scroll;
+    max-width: calc(var(--column-max-width) * 0.2);
 }
-.servicio-solicitado-row-autocomplete input[type='text'] {
-    /* border: 0; */
-    font-weight: lighter;
+
+.table-cell-codigo div,
+.table-cell-detalletrabajo div,
+.table-cell-equipo div,
+.table-cell-infoadicional div,
+.table-cell-valor div {
+    overflow-y: scroll;
+    max-height: calc(var(--column-max-height) * 0.2);
 }
 
-
-/** ESTILANDO COLUMNAS ESPECÍFICAS */
-.table-cell-valorunitario h4{
+.table-cell-valor div {
     width: fit-content;
     margin: 0 auto;
 }
+/** --------------------------------------------------------------------------------------------  */
+/** --------------------------------------------------------------------------------------------  */
+/** --------------------------------------------------------------------------------------------  */

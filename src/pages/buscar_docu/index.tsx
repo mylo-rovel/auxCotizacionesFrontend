@@ -3,11 +3,11 @@ import { IConfiguracionPageProps } from "../../../models";
 import { MainLayout } from '../../../components/layouts';
 // import { ConfiguracionFrame } from 'components/singles';
 
-const BuscarPDFPage: NextPageWithLayout<IConfiguracionPageProps> = (props) => {
+const BuscarPage: NextPageWithLayout<IConfiguracionPageProps> = (props) => {
   return <></>
 };
 
-BuscarPDFPage.getLayout = function getLayout(page:JSX.Element){
+BuscarPage.getLayout = function getLayout(page:JSX.Element){
   return(
     <MainLayout title="AuxiliarCotizaciones">
       {page}
@@ -16,4 +16,4 @@ BuscarPDFPage.getLayout = function getLayout(page:JSX.Element){
 }
 
 
-export default BuscarPDFPage;
+export default BuscarPage;

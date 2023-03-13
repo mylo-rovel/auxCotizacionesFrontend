@@ -32,6 +32,13 @@
     /* flex-wrap: wrap; */
 }
 
+.servicio-row-container-data h3 {
+    border-top: solid black 1px;
+}
+.servicio-row-container-data h3:first-child {
+    border-top: 0;
+}
+
 .servicio-row-container-buttons {
     /* background-color: blue; */
     flex: calc(1 - var(--data-width));

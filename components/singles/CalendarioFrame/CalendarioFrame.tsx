@@ -1,17 +1,26 @@
-import { FC, useState } from 'react';
 import Calendar from 'react-calendar';
+import { FC, useContext, useState, useEffect } from 'react';
 
-import { getValidDateString } from 'utils';
 import { ICalendarioFrameProps } from 'models';
 import styles from "./CalendarioFrame.module.css";
-import { FancyButton, PortalContainer, PortaledModal } from 'components/singles';
+import { TrabajosContext } from "context/trabajos";
+import { PortaledModal } from 'components/singles';
+import { getValidDateString, defaultNUEVA_COTIZACION_ID } from 'utils';
 
-export const CalendarFrame: FC<ICalendarioFrameProps> = ({dateSetter, subpageTitle, changeToAnotherSubpage}) => {
+export const CalendarFrame: FC<ICalendarioFrameProps> = (props) => {
+    const { updateIdCotizacionRecibida } = useContext(TrabajosContext);
+    const {
+        dateSetter, subpageTitle, changeToAnotherSubpage, resetCotizacionValues
+    } = props;
     const [displayModal, setDisplayModal] = useState<boolean>(false);
     const [fechaElegida, setFechaElegida] = useState<string>('');
 
-    const colorToUse = (subpageTitle === 'fecha de cotización') ? 'green' : 'blue';
+    useEffect(() => {
+        updateIdCotizacionRecibida(defaultNUEVA_COTIZACION_ID);
+        resetCotizacionValues();
+    },[]);
 
+    const colorToUse = (subpageTitle === 'fecha de cotización') ? 'green' : 'blue';
     const fechaTitleText = subpageTitle[0].toUpperCase() + subpageTitle.slice(1);
 
     return (

@@ -52,7 +52,15 @@ export class DataRequester {
         const urlToFetch = `${DataRequester.baseServerURL}/clientes/`;
         try {
             const fetchedData: IClienteRut[] = await fetch(urlToFetch).then(data => data.json());
-            return fetchedData;
+            //* SI ENVIAMOS UN RUT VACIO, EN EL BACKEND GUARDAREMOS `idCliente_${id}`
+            //*     ===> SI ES RUT REAL, EL PRIMER INDICE ES UN NÚMERO MAYOR A 0
+            console.log()
+            return fetchedData.filter((cliente) => {
+                //* CHEQUEAR SI EL RUT ESTÁ VACÍO
+                if (cliente.rut === '') return false;
+                //* CHEQUEAR SI EL PRIMER DÍGITO ES UN NÚMERO DE UN RUT REAL
+                return (Number(cliente.rut[0]) > 0);
+            });
         }
         catch {
             return [];
@@ -73,7 +81,8 @@ export class DataRequester {
     public static async getListaServicios(fechaObjetivo: string): Promise<IServicioData[]> {
         const urlToFetch = `${DataRequester.baseServerURL}/servicios/${fechaObjetivo}`;
         try {
-            const fetchedData: IServicioData[] = await fetch(urlToFetch).then(data => data.json());
+            const fetchedData: IServicioData[] | string = await fetch(urlToFetch).then(data => data.json());
+            if (typeof fetchedData === 'string') return [];
             return fetchedData;
         }
         catch {
@@ -119,8 +128,8 @@ export class DataRequester {
             }
         };
         const fetchedData = await fetch(urlToFetch, requestConfig).then(data => data.json()).catch(err => err);
-        // return String(fetchedData);
-        return (typeof fetchedData === 'string') ? fetchedData : errorDefaultMessage;
+        return String(fetchedData);
+        // return (typeof fetchedData === 'string') ? fetchedData : errorDefaultMessage;
     }
 
 
@@ -173,7 +182,7 @@ export class DataRequester {
 
 
     public static async enviarDatosCotizacion(ensambledObjToSend: ICotizacionEnviar) {
-        const urlToFetch = `${DataRequester.baseServerURL}/cotizaciones/registrar`;
+        const urlToFetch = `${DataRequester.baseServerURL}/cotizaciones/`;
         const httpMethod = 'post';
         const defaultErrorMsg = 'ERROR AL GUARDAR DATOS COTIZACION';
         return DataRequester.performRequest(ensambledObjToSend, urlToFetch, httpMethod, defaultErrorMsg);

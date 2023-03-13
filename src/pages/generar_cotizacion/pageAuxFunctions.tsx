@@ -26,7 +26,9 @@ type pageContentArgsArrTypes = [
     clienteData: IInputClienteDataEnviar,
     serviciosSolicitadosArr: IServicioSolicitado[],
 
-    ensambledObjectToSend: ICotizacionEnviar
+    ensambledObjectToSend: ICotizacionEnviar,
+
+    resetCotizacionValues: () => void,
 ]
 
 
@@ -46,6 +48,8 @@ export function getPageContent(pageContentArgsArr: pageContentArgsArrTypes): JSX
 
     const innerEnsambledObjToSend = pageContentArgsArr[8];
 
+    const resetCotizacionValues = pageContentArgsArr[9];
+
     //? BUSCAMOS GUARDAR LA FECHA SELECCIONADA, Y DEJAR EL INDICE EN 1 
     //? PARA "PASAR A LA SIG SUBPÁGINA"
     const dateSetterFechaCoti = getFixedDateSetter(innerCotiValExtaSetter, 'fecha de cotización');
@@ -56,8 +60,8 @@ export function getPageContent(pageContentArgsArr: pageContentArgsArrTypes): JSX
     }
 
     const pageOptions: IPageOptions = {
-        0: <CalendarFrame changeToAnotherSubpage={changeToNextSubpage(pageIndexSetter, 0)} subpageTitle='fecha de cotización' dateSetter={dateSetterFechaCoti}/>,
-        1: <CalendarFrame changeToAnotherSubpage={changeToNextSubpage(pageIndexSetter, 1)} subpageTitle='fecha de validez de la cotización' dateSetter={dateSetterFechaValidezCoti}/>,
+        0: <CalendarFrame resetCotizacionValues={resetCotizacionValues} changeToAnotherSubpage={changeToNextSubpage(pageIndexSetter, 0)} subpageTitle='fecha de cotización' dateSetter={dateSetterFechaCoti}/>,
+        1: <CalendarFrame resetCotizacionValues={resetCotizacionValues} changeToAnotherSubpage={changeToNextSubpage(pageIndexSetter, 1)} subpageTitle='fecha de validez de la cotización' dateSetter={dateSetterFechaValidezCoti}/>,
         2: <ClienteFrame parent_formaPago={innerCotiValoresExtra.formaPago} fechaCotizacion={innerCotiValoresExtra.fechaCotizacion} parent_clienteDataSetter={innerClienteDataSetter} parent_cotiValExtaSetter={innerCotiValExtaSetter} parent_clientData={innerClienteData}/>,
         3: <ServiciosSolicitadosFrame parentServiciosSolicitadosArr={innerServiciosSolicitadosArr} parentServSolicitadosArrSetter={innerServSolicitadosArrSetter}/>,
         4: <ResumenCotizacionFrame ensambledObjToSend={innerEnsambledObjToSend}/>,

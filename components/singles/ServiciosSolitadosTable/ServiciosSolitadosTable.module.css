@@ -37,8 +37,8 @@
 
 /** ESTILANDO LAS COLUMNAS */
 .custom-table-column-codigo,
-.custom-table-column-descripcion,
-.custom-table-column-cantidad,
+.custom-table-column-detalleservicio,
+.custom-table-column-equipo,
 .custom-table-column-valor {
     border: solid black 1px;
     flex:0.25;
@@ -48,9 +48,44 @@
 }
 
 /** DEJANDO ALGUNOS VALORES EN EL CENTRO */
-.custom-column-codigo-value h4,
-.custom-column-cantidad-value h4{
-    width: fit-content;
-    margin: 0 auto;
+/* .custom-column-codigo-value h4, */
+.custom-column-valor-value h4{
+    height: 100%;
+    display: grid;
+    place-items: center;
 }
 
+
+.custom-column-codigo-value,
+.custom-column-detalleservicio-value,
+.custom-column-equipo-value,
+.custom-column-valor-value {
+    /* background-color: red; */
+    max-height: 10vh;
+}
+
+
+/** OVERFLOW SCROLL: STYLING THE SCROLLING BAR ------------------*/
+/* width */
+.custom-table-row ::-webkit-scrollbar {
+    width: 0.25rem;
+    height: 0.40rem;
+}
+
+/* Track */
+.custom-table-row ::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 5px transparent; 
+    border-radius: 10px;
+}
+
+/* Handle */
+.custom-table-row ::-webkit-scrollbar-thumb {
+    background: rgb(51, 51, 51); 
+    border-radius: 10px;
+}
+
+/* Handle on hover */
+.custom-table-row ::-webkit-scrollbar-thumb:hover {
+    background: rgb(27, 27, 27); 
+}
+/** ------------------------------------------------------------------ */

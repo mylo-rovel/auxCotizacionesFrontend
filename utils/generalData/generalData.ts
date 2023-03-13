@@ -4,6 +4,11 @@ export const pathSrcImagen = '/img/invent369Logo.png';
 export const saveCotizacionesSwitcherID_container = 'saveCotizacionesSwitcherID_container';
 
 //* IMPORTANT: THIS IS USED IN THE CONTEXT STATE API trabajosContext.ts AND TrabajosProvider.tsx
+//* THIS WAY WE CAN RESET THE VALUE TO A STANDARD VALUE
+export const defaultNUEVA_COTIZACION_ID = -1;
+
+//* IMPORTANT: THIS IS USED IN THE CONTEXT STATE API trabajosContext.ts AND TrabajosProvider.tsx
+//* THIS WAY WE CAN RESET THE VALUE TO A STANDARD VALUE
 export const defaultTrabajo_INITIAL_ID = -1;
 
 //* IMPORTANT: THIS IS USED IN THE generar pdf PAGE (IN THE BUTTONS TO CHANGE SUBPAGE)
@@ -32,4 +37,19 @@ export const ultimoRutManagerObj = {
         //* si ulitmoRut NO es null, lo retornará. de otro modo, retornará ''
         return ultimoRut ?? '';
     }
+}
+
+export const monthsByNumber: {[key:number]: string} = {
+    1: 'enero',
+    2: 'febrero',
+    3: 'marzo',
+    4: 'abril',
+    5: 'mayo',
+    6: 'junio',
+    7: 'julio',
+    8: 'agosto',
+    9: 'septiembre',
+    10: 'octubre',
+    11: 'noviembre',
+    12: 'diciembre',
 }

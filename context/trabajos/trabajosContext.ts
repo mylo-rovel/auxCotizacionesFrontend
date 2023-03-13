@@ -1,8 +1,11 @@
 import { createContext } from 'react';
 
-import { defaultTrabajo_INITIAL_ID, getValidDateString } from 'utils';
+import { defaultNUEVA_COTIZACION_ID, defaultTrabajo_INITIAL_ID, getValidDateString } from 'utils';
 import { ITrabajosContextState } from 'models';
-import { updateIDTrabajoModificar, updateFechaTrabajoEscogida, updateTrabajosList, setDisplayCalendarModal} from './trabajosReducerFns';
+import { 
+    updateIDTrabajoModificar, updateFechaTrabajoEscogida, updateTrabajosList, 
+    setDisplayCalendarModal, updatePrevFechaTrabajoEscogida, updateIdCotizacionRecibida
+} from './trabajosReducerFns';
 
 
 //* THIS OBJECT CAN BE USED TO GIVE TYPE TO payload WE WANT TO PASS TO
@@ -12,13 +15,17 @@ export const defaultValue: ITrabajosContextState = {
     //* DATA
     idTrabajoModificar: defaultTrabajo_INITIAL_ID,
     fechaTrabajoEscogida: getValidDateString(new Date()),
+    prevFechaTrabajoEscogida: '',
     listaTrabajos: [],
     displayCalendar: false,
+    nuevaCotizacionID: defaultNUEVA_COTIZACION_ID,
 
     //* METHODS TO CHANGE DATA (THEY CALL dispatch INTERNALLY)
     updateFechaTrabajoEscogida: updateFechaTrabajoEscogida(null),
+    updatePrevFechaTrabajoEscogida: updatePrevFechaTrabajoEscogida(null),
     updateTrabajosList: updateTrabajosList(null),
     updateIDTrabajoModificar: updateIDTrabajoModificar(null),
+    updateIdCotizacionRecibida: updateIdCotizacionRecibida(null),
 
     setDisplayCalendarModal: setDisplayCalendarModal(null),
 }

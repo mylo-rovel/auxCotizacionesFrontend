@@ -1,7 +1,7 @@
 import { NextRouter } from "next/router";
 import { Dispatch, SetStateAction } from "react";
 
-import { maximumLenghts } from 'utils';
+import { maximumLenghts, monthsByNumber } from 'utils';
 import { IServicioData, IServicioIDData, IValoresExtraCotizacion, calendarFrameToUse } from "models";
 
 
@@ -93,3 +93,43 @@ export const modifyArr = (props: modifyArrProps) => {
 export const getAcceptableStringValue = (valueToCheck: string | number): string => {
     return (String(valueToCheck).length === 0) ? ' - ' : String(valueToCheck)
 }
+
+export const getFechaBonitaParaMostrar = (fechaTrabajoEscogida: string): string => {
+    const fechaArr = fechaTrabajoEscogida.split('-').map((item) => Number(item));
+    if (!monthsByNumber[fechaArr[1]]) return fechaTrabajoEscogida;
+    return `${fechaArr[0]} de ${monthsByNumber[fechaArr[1]]} de ${fechaArr[2]}`;
+}
+
+
+    // // * FUNCION QUE SE EJECUTA EN EL BOTON (+)
+    // const addNewNextServicioSolicitado = (rowIndex: number) => () => {
+    //     if (rowIndex < 0) return;
+    //     // const newArray = modifyArr({
+    //     //     mode: 'add',
+    //     //     arrToModify: listaServiciosSolicitados,
+    //     //     indexToUse: rowIndex + 1,
+    //     //     elementToAdd: getEmptyServicioSolicitado()
+    //     // }) as IServicioSolicitado[];
+    //     // setListaSolicitados(newArray);
+
+    //     listaServiciosSolicitados.push(getEmptyServicioSolicitado());
+    //     const proxyListaSolicitados = [...listaServiciosSolicitados];
+    //     setListaSolicitados(proxyListaSolicitados);
+    //     parentServSolicitadosArrSetter(proxyListaSolicitados);
+    // }
+
+    // // * FUNCION QUE SE EJECUTA EN EL BOTON (-)
+    // const removeCurrentServicioSolicitado = (rowIndex: number) => () => {
+    //     if (rowIndex < 0) return;
+    //     // const newArray = modifyArr({
+    //     //     mode: 'remove',
+    //     //     arrToModify: listaServiciosSolicitados,
+    //     //     indexToUse: rowIndex + 1,
+    //     // }) as IServicioSolicitado[];
+    //     // setListaSolicitados(newArray);
+
+    //     listaServiciosSolicitados.pop();
+    //     const proxyListaSolicitados = [...listaServiciosSolicitados];
+    //     setListaSolicitados(proxyListaSolicitados);
+    //     parentServSolicitadosArrSetter(proxyListaSolicitados);
+    // }

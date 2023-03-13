@@ -1,54 +1,81 @@
-import { FC, useEffect, useState } from 'react';
+import { IconButton } from "@mui/material";
+import { FC, useContext, useEffect, useState } from 'react';
+import DownloadOutlinedIcon from '@mui/icons-material/DownloadOutlined';
 
-import { DataRequester } from 'apiClient';
-import { enviarDatosCotizacion } from 'utils';
+import { TrabajosContext } from "context/trabajos";
 import styles from "./ResumenCotizacionFrame.module.css";
 import { PortaledModal, ServiciosSolitadosTable } from 'components/singles';
+import { enviarDatosCotizacion, getFechaBonitaParaMostrar, generateNewCotizacionPDF } from 'utils';
 import { IInputClienteDataEnviar, IResumenCotizacionFrameProps, IServicioIDDataAccessObj } from 'models';
 
 export const ResumenCotizacionFrame: FC<IResumenCotizacionFrameProps> = ({ensambledObjToSend}) => {
-    const [coleccionServiciosPorID, setColeccionServiciosPorID] = useState<IServicioIDDataAccessObj>({});
+    const {fechaCotizacion, fechaValidezCoti, formaPago, clienteData, serviciosSolicitados, clienteEsNuevo} = ensambledObjToSend;
+    const { listaTrabajos, fechaTrabajoEscogida, nuevaCotizacionID, updateIdCotizacionRecibida } = useContext(TrabajosContext);
+
+    //* {ID TRABAJO : DATOS DEL TRABAJO}       USADO AL GENERAR LAS FILAS DE LA TABLA
+    const [dict_IdTrabajo_DatosTrabajo, setDict_IdTrabajo_DatosTrabajo] = useState<IServicioIDDataAccessObj>({});
+    
+    //* VALORES USADOS EN EL MODAL FINAL QUE MUESTRA EL RESULTADO DE LA OPERACIÓN
     const [resultadoOperacionStr, setResultadoOperacionStr] = useState<string>('');
-    const [operacionFueExitosa, setOperacionFueExitosa] = useState<boolean>(false);
     const [displayModal, setDisplayModal] = useState<boolean>(false);
 
-    const {fechaCotizacion, fechaValidezCoti, formaPago, clienteData, serviciosSolicitados, clienteEsNuevo} = ensambledObjToSend;
-
-    //TODO: CREAR BOOLEAN QUE INDIQUE SI LOS DATOS SON VALIDOS
     
-    //TODO: USAR UN BOTON QUE AL TOCAR CHEQUEE TODO Y MUESTRE UN MODAL
-    //TODO: QUE EL MODAL MUESTRE SI LA OPERACIÓN FUE EXITOSA
-    //TODO: QUE EL MODAL MUESTRE SI LA OPERACIÓN NO FUE EXITOSA
-    //TODO: QUE EL MODAL MUESTRE SI HAY ERRORES Y CUALES (EARLY RETURNS)
-    //TODO: TENEMOS QUE CREAR UNA FUNCIÓN QUE RETORNE UN STRING QUE MOSTRAREMOS
-    
-    //TODO: SI LA OPERACIÓN ES EXITOSA (status code 200) RECARGAR LA PAGINA ACTUAL
-
-
     useEffect(() => {
-        const fetchServicios = async () => {
-            const serviciosArr = await DataRequester.getListaServicios();
-
-            const coleccionServiciosObjPorID: IServicioIDDataAccessObj = serviciosArr.reduce((acc: IServicioIDDataAccessObj, servicioDataObj) => {
-                //* ID SERVICIO : DATOS DEL SERVICIO
+        const setupListasTrabajo = async () => {
+            //* SI EN EL DÍA ESCOGIDO NO HAY TRABAJOS, POS NO PODEMOS HACER ALGO UTIL CON UN []
+            if (listaTrabajos.length === 0) return;
+            
+            const coleccionTrabajosObjPorID: IServicioIDDataAccessObj = listaTrabajos.reduce((acc: IServicioIDDataAccessObj, servicioDataObj) => {
                 acc[servicioDataObj.id] = servicioDataObj;
                 return acc;
             }, {})
-            setColeccionServiciosPorID(coleccionServiciosObjPorID);        
+            setDict_IdTrabajo_DatosTrabajo(coleccionTrabajosObjPorID);
         }
-        fetchServicios();
-    }, []);
 
-    const enviarCotizacion = () => {
-        enviarDatosCotizacion(ensambledObjToSend, setResultadoOperacionStr, setDisplayModal, setOperacionFueExitosa)
-    }
+        setupListasTrabajo();
+    
+    //* SINCE WE HAVE TO USE THE MOST UPDATED listaTrabajos, WE WILL LISTEN TO CHANGES
+    //* OF THAT VARIABLE ==> BETTER THAN LISTEN TO fechaTrabajoEscogida    
+    //* WE HAVE NO BUSINESS WITH fechaTrabajoEscogida DIRECTLY AS WE DO WITH listaTrabajos
+    }, [listaTrabajos]);
 
-    const finalModalButtonFunction = () => {
-        if (operacionFueExitosa) {
-            window.location.reload();
-            return;
+
+    const BotonFinal = () => {
+        if (nuevaCotizacionID > 0) {
+            const downloadButtonFn = () => {
+                // alert(JSON.stringify(serviciosSolicitados))
+                if (serviciosSolicitados.length < 1) return;
+                generateNewCotizacionPDF({
+                    formaPago,
+                    fechaTrabajoEscogida,
+                    fechaCotizacion,
+                    fechaValidezCoti,
+                    clienteData,
+                    serviciosSolicitadosArr: serviciosSolicitados,
+                    // serviciosSolicitadosArr: [{"id":54}],
+                    dict_IdTrabajo_DatosTrabajo,
+                });
+            }
+            return(
+            <>
+            <article className={styles['download-cotizacion-button-container']} onClick={downloadButtonFn}>
+                <h3>Descargar</h3>
+                <IconButton size='large'>
+                    <DownloadOutlinedIcon/>
+                </IconButton>
+            </article>
+            </>);
         }
-        setDisplayModal(false);
+
+        const enviarCotizacion = () => enviarDatosCotizacion({ensambledObjToSend, setResultadoOperacionStr, setDisplayModal, updateIdCotizacionRecibida});
+        return (
+        <>
+            <article className={styles['final-send-data-button-container']}>
+                <button onClick={enviarCotizacion} className={styles['final-send-data-button']}>
+                    ENVIAR COTIZACIÓN
+                </button>
+            </article>
+        </>);
     }
 
     return (
@@ -56,26 +83,28 @@ export const ResumenCotizacionFrame: FC<IResumenCotizacionFrameProps> = ({ensamb
         {
         (displayModal) 
             ? <>
-                <PortaledModal buttonText='CERRAR' buttonFn={() => {
-                    finalModalButtonFunction();
-                }}>
+                <PortaledModal buttonText='CERRAR' buttonFn={() => setDisplayModal(false)}>
                     <h1>{resultadoOperacionStr}</h1>
                 </PortaledModal>
               </> 
             : null
-        }
+        }        
         <article className={styles['resumen-cotizacion-main-container']}>
+
+            {/* SECCIÓN DE LOS DATOS TRANSVERSALES ------------------------------------- */}
             <article className={styles['resumen-cotizacion-header-container']}>
                 <section>
                     <h4>Resumen de la cotización</h4>
                 </section>
                 <section className={styles['resumen-header-values']}>
-                    <div>Fecha cotización: <h4>{fechaCotizacion}</h4></div>
-                    <div>Fecha validez cotización: <h4>{fechaValidezCoti}</h4></div>
+                    <div>Fecha cotización: <h4>{(fechaCotizacion === '') ? 'FECHA NO DEFINIDA!!!!!' : fechaCotizacion}</h4></div>
+                    <div>Fecha validez cotización: <h4>{(fechaValidezCoti === '') ? 'FECHA NO DEFINIDA!!!!!' : fechaValidezCoti}</h4></div>
                     <div>¿Cliente es nuevo? <h4>{clienteEsNuevo ? 'Es nuevo!' : 'Es recurrente! (antiguo)'}</h4></div>
                 </section>
             </article>
 
+
+            {/* SECCIÓN DE LOS DATOS DEL CLIENTE --------------------------------------- */}
             <article className={styles['resumen-cliente-container']}>
                 <section>
                     <h4>Cliente</h4>
@@ -85,18 +114,19 @@ export const ResumenCotizacionFrame: FC<IResumenCotizacionFrameProps> = ({ensamb
                 </section>
             </article>
 
+
+            {/* SECCIÓN DE LA TABLA ---------------------------------------------------- */}
             <article className={styles['resumen-serviciossolicitados-container']}>
                 <section>
-                    <h4>Servicios solicitados</h4>
+                    <h4>Servicios solicitados del día {getFechaBonitaParaMostrar(fechaTrabajoEscogida)}</h4>
                 </section>
-                <ServiciosSolitadosTable serviciosSolicitadosArr={serviciosSolicitados} coleccionServiciosPorID={coleccionServiciosPorID}/>
+                <ServiciosSolitadosTable serviciosSolicitadosArr={serviciosSolicitados} dict_IdTrabajo_DatosTrabajo={dict_IdTrabajo_DatosTrabajo}/>
             </article>
+
         </article>
-        <article className={styles['final-send-data-button-container']}>
-            <button onClick={enviarCotizacion} className={styles['final-send-data-button']}>
-                ENVIAR COTIZACIÓN
-            </button>
-        </article>
+
+        {nuevaCotizacionID}
+        <BotonFinal/>
         </>
     )
 }

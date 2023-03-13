@@ -1,23 +1,44 @@
 import Calendar from 'react-calendar';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
-import { FC, useState, useEffect, SetStateAction, Dispatch, useContext } from 'react';
+import { FC, useState, useEffect, SetStateAction, Dispatch, useContext, CSSProperties } from 'react';
 
 import { DataRequester } from 'apiClient';
-import styles from "./ServiciosSolicitadosFrame.module.css"
 import { TrabajosContext } from "context/trabajos";
-import { getEmptyServicioDataObj, getEmptyServicioSolicitado, getValidDateString, maximumLenghts } from 'utils';
+import { BotonesFinales_Mas_Menos } from './AuxComponents';
+import styles from "./ServiciosSolicitadosFrame.module.css"
+import { PortaledModal } from '../PortaledModal/PortaledModal';
+import { getEmptyServicioSolicitado, getValidDateString } from 'utils';
+import { getFechaBonitaParaMostrar } from '../../../utils/generalFunctions/generalFunctions';
 import { 
     IServicioData, IServiciosSolicitadosFrameProps, 
     IServicioSolicitado, IServicioDataAccessObj, IServicioIDDataAccessObj
 } from "models";
-import { PortaledModal } from '../PortaledModal/PortaledModal';
 
 
-type labelServicios = { label: string };
+export type labelServicios = { label: string };
 
 export const ServiciosSolicitadosFrame: FC<IServiciosSolicitadosFrameProps> = ({ parentServSolicitadosArrSetter, parentServiciosSolicitadosArr }) => {
-    const { fechaTrabajoEscogida, updateFechaTrabajoEscogida, displayCalendar, setDisplayCalendarModal } = useContext(TrabajosContext);
+    const { 
+        fechaTrabajoEscogida, updateFechaTrabajoEscogida, 
+        prevFechaTrabajoEscogida, updatePrevFechaTrabajoEscogida,
+        displayCalendar, setDisplayCalendarModal, 
+        updateTrabajosList } = useContext(TrabajosContext);
+    
+    useEffect(() => {
+        if (fechaTrabajoEscogida === '') {
+            const todayDateObj = new Date();
+            updateFechaTrabajoEscogida(getValidDateString(todayDateObj));
+        }
+        const fetchServicios = async () => {
+            if (prevFechaTrabajoEscogida === fechaTrabajoEscogida) return;
+            const serviciosArr = await DataRequester.getListaServicios(fechaTrabajoEscogida);
+            updateTrabajosList(serviciosArr);
+            updatePrevFechaTrabajoEscogida(fechaTrabajoEscogida);
+            parentServSolicitadosArrSetter([{id:-1}]);
+        }
+        fetchServicios();
+    }, [fechaTrabajoEscogida]);
 
     const displayModalCalendarioButtonFn = () => { if (document) setDisplayCalendarModal(false); }     
     const ModalCalendario = () => {
@@ -44,6 +65,7 @@ export const ServiciosSolicitadosFrame: FC<IServiciosSolicitadosFrameProps> = ({
 
     return (
     <>
+        {/* {JSON.stringify({parentServiciosSolicitadosArr})} */}
         <ModalCalendario/>
         <article className={styles['servicios-solicitados-container']}>
             <table>
@@ -57,7 +79,13 @@ export const ServiciosSolicitadosFrame: FC<IServiciosSolicitadosFrameProps> = ({
 
                 <thead>
                     <tr>
-                        <th colSpan={5}>Trabajos del día {fechaTrabajoEscogida}</th>
+                        <th 
+                            onClick = {() => setDisplayCalendarModal(true)}
+                            colSpan={5}
+                            className={styles['the-very-title-of-the-table']}
+                        >
+                            Trabajos del día {getFechaBonitaParaMostrar(fechaTrabajoEscogida)}
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -93,10 +121,10 @@ export const ServiciosSolicitadosFrame: FC<IServiciosSolicitadosFrameProps> = ({
 
 
 
-//* -----------------------------------------------------------------------------
-//* -----------------------------------------------------------------------------
-//* -----------------------------------------------------------------------------
-//* COMPONENTE COLECCION DE FILAS DE LA TABLA -----------------------------------
+//* -----------------------------------------------------------------------------------------------------------------------------------
+//* -----------------------------------------------------------------------------------------------------------------------------------
+//* -----------------------------------------------------------------------------------------------------------------------------------
+//* COMPONENTE COLECCION DE FILAS DE LA TABLA -----------------------------------------------------------------------------------------
 
 interface TableBodyRowsCollectionProps {
     //* ESTA ES LA FUNCIÓN QUE EJECUTAREMOS CUANDO INTERACTUEN CON LOS BOTONES DE CAMBIAR PAGINA
@@ -108,22 +136,59 @@ interface TableBodyRowsCollectionProps {
 
 
 const TableBodyRowsCollection: FC<TableBodyRowsCollectionProps> = (propsObj) => {
-    const { fechaTrabajoEscogida, updateFechaTrabajoEscogida, updateTrabajosList } = useContext(TrabajosContext);
-
-    //* NOMBRE TRABAJO : DATOS DEL TRABAJO
-    const [coleccionServicios, setColeccionServGuardados] = useState<IServicioDataAccessObj>({});
-
-    //* ID TRABAJO : DATOS DEL TRABAJO
-    const [coleccionServiciosPorID, setColeccionServiciosPorID] = useState<IServicioIDDataAccessObj>({});
-    
-    //* LISTA PARA EL COMPONENTE AUTOCOMPLETAR
-    const [listaServiciosLabel, setListaServiciosLabel] = useState<labelServicios[]>([]);
-
-
-    //* just for the rerendering
-    const [_, setAmountOfRows] = useState<number>(0);
-
     const { parentServiciosSolicitadosArr, parentServSolicitadosArrSetter } = propsObj;
+    const { fechaTrabajoEscogida, updateFechaTrabajoEscogida, listaTrabajos } = useContext(TrabajosContext);
+    
+    //* -----------------------------------------------------------------------------------------
+    //* {ID TRABAJO : DATOS DEL TRABAJO}       USADO AL GENERAR LAS FILAS DE LA TABLA
+    const [dict_IdTrabajo_DatosTrabajo, setDict_IdTrabajo_DatosTrabajo] = useState<IServicioIDDataAccessObj>({});
+    //* -----------------------------------------------------------------------------------------
+    //* {ID TRABAJO : DATOS DEL TRABAJO}       USADO EN EL AUTOCOMPLETAR
+    const [dict_NombreTrabajo_DatosTrabajo, setDict_NombreTrabajo_DatosTrabajo] = useState<IServicioDataAccessObj>({});
+    //* -----------------------------------------------------------------------------------------
+
+
+    //* JUST FOR THE RERENDERING
+    const setAmountOfRows = useState<number>(0)[1];
+
+    //* USADO PARA MOSTRAR O NO EL MODAL PARA ELEGIR TRABAJO PARA LA FILA CLICKEADA
+    const [displayModalTrabajoElegir, setDisplayModalTrabajoElegir] = useState<boolean>(false);
+
+    //* USADO PARA TENER LA REFERENCIA DE LA FILA QUE FUE CLICKEADA
+    const [currentIndexToModify, setCurrIndexToModify] = useState<number>(-1);
+
+
+    useEffect(() => {
+        if (fechaTrabajoEscogida === '') {
+            const todayDateObj = new Date();
+            updateFechaTrabajoEscogida(getValidDateString(todayDateObj));
+        }
+
+        const setupListasTrabajo = async () => {
+            //* SI EN EL DÍA ESCOGIDO NO HAY TRABAJOS, POS NO PODEMOS HACER ALGO UTIL CON UN []
+            if (listaTrabajos.length === 0) return;
+            
+            // TODO: PUNTO OPTIMIZABLE => RECORREMOS LA MISMA LISTA 2 VECES
+            const coleccionTrabajosObjPorID: IServicioIDDataAccessObj = listaTrabajos.reduce((acc: IServicioIDDataAccessObj, servicioDataObj) => {
+                acc[servicioDataObj.id] = servicioDataObj;
+                return acc;
+            }, {})
+            setDict_IdTrabajo_DatosTrabajo(coleccionTrabajosObjPorID);
+
+            const coleccionTrabajosObjPorNombre: IServicioDataAccessObj = listaTrabajos.reduce((acc: IServicioDataAccessObj, servicioDataObj) => {
+                acc[servicioDataObj.detalle_servicio] = servicioDataObj;
+                return acc;
+            }, {})
+            setDict_NombreTrabajo_DatosTrabajo(coleccionTrabajosObjPorNombre);
+        }
+
+        setupListasTrabajo();
+    
+    //* SINCE WE HAVE TO USE THE MOST UPDATED listaTrabajos, WE WILL LISTEN TO CHANGES
+    //* OF THAT VARIABLE ==> BETTER THAN LISTEN TO fechaTrabajoEscogida    
+    //* WE HAVE NO BUSINESS WITH fechaTrabajoEscogida DIRECTLY AS WE DO WITH listaTrabajos
+    }, [listaTrabajos]);
+
 
     // * FUNCION QUE SE EJECUTA EN EL BOTON (+)
     const addNewNextServicioSolicitado = (rowIndex: number) => () => {
@@ -139,7 +204,7 @@ const TableBodyRowsCollection: FC<TableBodyRowsCollectionProps> = (propsObj) => 
 
     // * FUNCION QUE SE EJECUTA EN EL BOTON (-)
     const removeCurrentServicioSolicitado = (rowIndex: number) => () => {
-        if (rowIndex < 0) return;
+        if (rowIndex <= 0) return;
         const proxyListaSolicitados = [...parentServiciosSolicitadosArr];
         proxyListaSolicitados.pop();
 
@@ -150,74 +215,79 @@ const TableBodyRowsCollection: FC<TableBodyRowsCollectionProps> = (propsObj) => 
     }
 
 
-    useEffect(() => {
-        if (fechaTrabajoEscogida === '') {
-            const todayDateObj = new Date();
-            updateFechaTrabajoEscogida(getValidDateString(todayDateObj));
+    const modalTrabajoElegirButtonFn = () => { setDisplayModalTrabajoElegir(false); }
+    const ModalElegirTrabajo = () => {
+        if (!displayModalTrabajoElegir) return <></>;
+        if (currentIndexToModify >= parentServiciosSolicitadosArr.length) return <></>;
+
+        const listaOpciones = listaTrabajos.map((item) => ({label: item.detalle_servicio}));
+
+        const updateParentList = (_: unknown, rawNewTrabajo: string) => {
+            const trabajoData = dict_NombreTrabajo_DatosTrabajo[rawNewTrabajo];
+            if (!trabajoData) return;            
+            const proxyParentList = [... parentServiciosSolicitadosArr];
+            proxyParentList[currentIndexToModify].id = trabajoData.id;
+            parentServSolicitadosArrSetter(proxyParentList);
+            setDisplayModalTrabajoElegir(false);
+            setCurrIndexToModify(-1)
         }
+        return (
+        <>
+            <PortaledModal contentIsNotOnlyText={true} buttonText='CERRAR' buttonFn={modalTrabajoElegirButtonFn}>
+                <article className={styles['modify-row-trabajo-portal-frame']}>  
+                    <h3>Modificando trabajo elegido de la fila {currentIndexToModify+1}</h3>
+                    <Autocomplete 
+                        options={listaOpciones} 
+                        renderInput={(params) => <TextField {...params} label="" />} 
+                        onInputChange={updateParentList}
+                    /> 
+                </article>
+            </PortaledModal>
+        </>)
+    }
 
-        const fetchServicios = async () => {
-            const serviciosArr = await DataRequester.getListaServicios(fechaTrabajoEscogida);
-            updateTrabajosList(serviciosArr);
 
-            // TODO: PUNTO OPTIMIZABLE => RECORREMOS LA MISMA LISTA 2 VECES
-            const coleccionServiciosObj: IServicioDataAccessObj = serviciosArr.reduce((acc: IServicioDataAccessObj, servicioDataObj) => {
-                acc[servicioDataObj.detalle_servicio] = servicioDataObj;
-                return acc;
-            }, {})
-            setColeccionServGuardados(coleccionServiciosObj);
 
-            const coleccionServiciosObjPorID: IServicioIDDataAccessObj = serviciosArr.reduce((acc: IServicioDataAccessObj, servicioDataObj) => {
-                acc[servicioDataObj.id] = servicioDataObj;
-                return acc;
-            }, {})
-            setColeccionServiciosPorID(coleccionServiciosObjPorID);        
-            
-            const nombreServicios: labelServicios[] = serviciosArr.map((item) => ({label: item.detalle_servicio}));
-            setListaServiciosLabel(nombreServicios);
-        }
 
-        //* IF THE LIST IS EMPTY, REFETCH BECAUSE WE HAVE NO DATA OF SERVICIOS
-        if (listaServiciosLabel.length === 0) fetchServicios();
-    }, [fechaTrabajoEscogida]);
-
-    const coleccionServiciosIsRdy = (Object.keys(coleccionServicios).length > 0);
-    const coleccionServiciosPorIDIsRdy = (Object.keys(coleccionServiciosPorID).length > 0);
-    const conditionsAreOK = (coleccionServiciosIsRdy) && (coleccionServiciosPorIDIsRdy);
-
+    const toggleDisplayModalElegirTrabajo = (rowIndex: number) => () => {
+        setCurrIndexToModify(rowIndex);
+        setDisplayModalTrabajoElegir(true);
+    }
     const FilasTabla = () => {
-        if (!conditionsAreOK) return <></>;
+        if (parentServiciosSolicitadosArr.length === 0) return <></>;
         
-        const serviciosSolicitadosArr = parentServiciosSolicitadosArr;
+        // //* WE WANT TO CHECK IF THE ROWS MATCH THE SELECTED DAY
+        // const testElement = dict_IdTrabajo_DatosTrabajo[parentServiciosSolicitadosArr[0].id];
+        // if (!testElement) return <></>;
+        // if (testElement.created_at !== fechaTrabajoEscogida) return <></>;
+
         return (
         <>{
-        serviciosSolicitadosArr.map((itemServicio, index) => {
-            const servicioFila = serviciosSolicitadosArr[index];
-            const servicioElegidoProp = (servicioFila.id in coleccionServiciosPorID) ? coleccionServiciosPorID[servicioFila.id].detalle_servicio : null;
+        parentServiciosSolicitadosArr.map((trabajoEnviar, index) => {
+            //* Empty object IServicioData
+            let trabajoEscogido: IServicioData = { id: -1, codigo: '-', detalle_servicio: '-', equipo: '-', info_adicional: '-', valor: 0, created_at: '-', updated_at: '-', fecha_realizacion: '-', };
             
-            return <ServicioSolicitadoRow 
-                key = {`servicio_solicitado_${index}`}
-
-                rowIndex={index}
-                servicioElegidoProp={servicioElegidoProp}
-                codigoValueProp={itemServicio.codigo}                    
-                cantidadValueProp={itemServicio.id}
-                
-                coleccionServicios={coleccionServicios} //* PARA ACCEDER A LOS DATOS USANDO EL NOMBRE
-                listaNombreServicios={listaServiciosLabel} //* PARA EL AUTO COMPLETE
-                listaServiciosSolicitados={serviciosSolicitadosArr} //* PARA ACCEDER A LO QUE SE ENVIARÁ
-                //* ACCEDEMOS AL OBJETO CORRECTO GRACIAS A (rowIndex: number)
+            if (dict_IdTrabajo_DatosTrabajo[trabajoEnviar.id]) trabajoEscogido = dict_IdTrabajo_DatosTrabajo[trabajoEnviar.id];
+            
+            return <ServicioSolicitadoRow key = {`servicio_solicitado_${index}`}                
+                trabajoEscogido = {trabajoEscogido}
+                rowCharacteristics = {{
+                    rowIsLastOne: (index === parentServiciosSolicitadosArr.length-1),
+                    shouldDisplayMinusButton: index !== 0                    
+                }}
                 
                 addNewRow={addNewNextServicioSolicitado(index)}
                 removeRow={removeCurrentServicioSolicitado(index)}
 
-                parentServSolicitadosArrSetter={parentServSolicitadosArrSetter} />
+                toggleDisplayModalElegirTrabajo = {toggleDisplayModalElegirTrabajo(index)}
+                />
         })
         }</>)
     }
 
     return (
-    <>
+    <>      
+        <ModalElegirTrabajo/>
         <FilasTabla/>
     </>
     )
@@ -227,240 +297,68 @@ const TableBodyRowsCollection: FC<TableBodyRowsCollectionProps> = (propsObj) => 
 
 
 
-//* -----------------------------------------------------------------------------
-//* -----------------------------------------------------------------------------
-//* -----------------------------------------------------------------------------
-//* COMPONENTE FILA ESPECÍFICA --------------------------------------------------
+//* -----------------------------------------------------------------------------------------------------------------------------------
+//* -----------------------------------------------------------------------------------------------------------------------------------
+//* -----------------------------------------------------------------------------------------------------------------------------------
+//* COMPONENTE CADA FILA ESPECÍFICA ---------------------------------------------------------------------------------------------------
 
-interface ServicioSoliRowProp {
-    rowIndex: number;
-    servicioElegidoProp: string | null;
-    codigoValueProp: string;
-    cantidadValueProp: number;
+interface ServicioSoliRowProp {    
+    trabajoEscogido: IServicioData;
 
-    coleccionServicios: IServicioDataAccessObj; //* PARA ACCEDER A LOS DATOS USANDO EL NOMBRE
-    listaNombreServicios: labelServicios[]; //* PARA EL AUTO COMPLETE
-    listaServiciosSolicitados: IServicioSolicitado[]; //* PARA ACCEDER A LO QUE SE ENVIARÁ
-
-    //* FUNCIÓN DEL BOTON (+)
-    addNewRow: () => void;  
-    //* FUNCIÓN DEL BOTON (-)
-    removeRow: () => void;
-
-    //* PARA MODIFICAR LA LISTA PERTENECIENTE A UN COMPONENTE PADRE
-    parentServSolicitadosArrSetter: Dispatch<SetStateAction<IServicioSolicitado[]>>;
+    rowCharacteristics: {
+        rowIsLastOne: boolean;
+        shouldDisplayMinusButton: boolean;
+    }
+    
+    addNewRow: () => void;  //* FUNCIÓN DEL BOTON (+)
+    removeRow: () => void;  //* FUNCIÓN DEL BOTON (-)
+    
+    toggleDisplayModalElegirTrabajo: () => void
 }
 
 const ServicioSolicitadoRow: FC<ServicioSoliRowProp> = (propsObj) => {
-    //* --------------------------------------------------------------------------------
-    //* --------------------------------------------------------------------------------
-    //* VALORES DE CADA INPUT
-    const [servicioElegido, setServicioElegido] = useState<string | null>('');
-    const [codigoValue, setCodigoValue] = useState<string>('');
-    const [cantidadValue, setCantidadValue] = useState<number>(0);
-    
-    //* OBJETO QUE AYUDA A QUE MOSTREMOS DATOS DEL SERVICIO
-    const [servicioData, setServicioData] = useState<IServicioData>(getEmptyServicioDataObj());
-
-    //* SÓLO PERMITIR MODIFICAR SI EL MOUSE ESTÁ ENCIMA
-    const [rowIsActive, setRowIsActive] = useState<boolean>(false);
-    //* --------------------------------------------------------------------------------
-
-    //* --------------------------------------------------------------------------------
-    //* --------------------------------------------------------------------------------
+    const [mouseIsOverRow, setMouseIsOverRow] = useState<boolean>(false);
     const {
-        rowIndex, //* PARA ACCEDER A listaServiciosSolicitados Y CHEQUEAR OTRAS COSAS
-        
-        codigoValueProp, cantidadValueProp, servicioElegidoProp, //* PARA DESPLEGAR DATOS GUARDADOS
-        
-        coleccionServicios, listaNombreServicios, //* PARA CHEQUEAR Y PODER USAR EL AUTOCOMPLETAR
-        
-        listaServiciosSolicitados, parentServSolicitadosArrSetter, //* PARA MANEJAR LA LISTA A ENVIAR DEL COMPONENTE PADRE
-        
-        addNewRow, removeRow //* PARA DARLE FUNCIONALIDAD A LOS BOTONES (+) Y (-)
+        trabajoEscogido, //* DATOS QUE MOSTRAREMOS
+        rowCharacteristics,
+        addNewRow, removeRow, //* PARA DARLE FUNCIONALIDAD A LOS BOTONES (+) Y (-)
+        toggleDisplayModalElegirTrabajo,
     } = propsObj;
-    //* --------------------------------------------------------------------------------
+    //* -----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
-    //* --------------------------------------------------------------------------------
-    //* --------------------------------------------------------------------------------
-    useEffect(() => {
-        if (codigoValueProp !== '') {
-            setCodigoValue(codigoValueProp);
-        };
-        if (cantidadValueProp > 0) {
-            setCantidadValue(cantidadValueProp);
-        };
-        
-        if ((servicioElegidoProp !== '') && (servicioElegidoProp !== null)) {
-            const servicioData = coleccionServicios[servicioElegidoProp];
-            setServicioData(servicioData);
-            setServicioElegido(servicioElegidoProp);
-        }
-        else {
-            setServicioData(getEmptyServicioDataObj());
-        };
-    }, []);
-    //* --------------------------------------------------------------------------------
-
-
-    //* SETTERS DE LOS INPUTS ----------------------------------------------------------
-    //* --------------------------------------------------------------------------------
-
-    const setCodigoInputValue = (newCodigo: string) => {
-        if (newCodigo !== '') {
-        };
-        listaServiciosSolicitados[rowIndex].codigo = newCodigo;
-        setCodigoValue(newCodigo);
-    }
-    const setCantidadInputValue = (newCantidad: number) => {
-        // if (newCantidad >= 0) {
-        if ((newCantidad >= 0) && (`${newCantidad}`.length <= maximumLenghts.maxCantidadLength)) {
-            listaServiciosSolicitados[rowIndex].cantidad = newCantidad;
-            setCantidadValue(newCantidad);
-        };
-    }
-
-    const setNewServicioElegido = (_: unknown, nuevoServicioElegido: string) => {
-        let servicioData: IServicioData = getEmptyServicioDataObj();
-        let servicioASettear: typeof servicioElegido = null;
-
-        if (nuevoServicioElegido in coleccionServicios) {
-            servicioData = coleccionServicios[nuevoServicioElegido];
-            servicioASettear = nuevoServicioElegido;
-        }
-        
-        setServicioData(servicioData);
-        setServicioElegido(servicioASettear);
-        
-        const proxyListaSolicitados = [...listaServiciosSolicitados];                
-        proxyListaSolicitados[rowIndex].id = servicioData.id;
-        parentServSolicitadosArrSetter(proxyListaSolicitados);
-    }
-    //* --------------------------------------------------------------------------------
-
+    const styleObj: CSSProperties = {borderColor: 'red', opacity: 0.95, transition: 'all 0.1s'};
+    const commonStyleObjToUse = (mouseIsOverRow) ? styleObj : {}
 
     return (
     <>
         <tr 
-            className={styles['servicio-solicitado-row']}
-            onMouseEnter={() => {
-                setRowIsActive(true);
-            }}
-            onMouseLeave={() => {
-                setRowIsActive(false);
-
-                //* SI SACAMOS EL MOUSE DE LA FILA, GUARDAR LOS CAMBIOS
-                const proxyListaSolicitados = [...listaServiciosSolicitados];                
-                parentServSolicitadosArrSetter(proxyListaSolicitados);
-            }}
+        onMouseEnter={() => setMouseIsOverRow(true)}
+        onMouseLeave={() => setMouseIsOverRow(false)}
+        className={styles['servicio-solicitado-row']}
         >
-            <td className={styles['table-column-codigo-cell']}>{/* Código */}
-                {(!rowIsActive)
-                    ? <h4>{codigoValue}</h4>
-                    : <input 
-                        type='text'
-                        onChange={(eObj) => {
-                            const newCodigo = eObj.target.value;
-                            setCodigoInputValue(newCodigo);
-                        }}
-                        value={codigoValue}
-                      />
-                }
-
+            <td className={styles['table-cell-codigo']} onClick={() => {toggleDisplayModalElegirTrabajo();}} style={commonStyleObjToUse}>
+                <div><h4>{trabajoEscogido.codigo}</h4></div>
             </td>
-            <td className={styles['servicio-solicitado-row-autocomplete']}>{/* Descripcion */}
-                {(!rowIsActive)
-                    ? <h4>{servicioElegido}</h4>
-                    : <Autocomplete 
-                        options={listaNombreServicios} 
-                        renderInput={(params) => <TextField {...params} label="" />} 
-                        onInputChange={setNewServicioElegido}
-                        disabled={!rowIsActive}
-                      /> 
-                }
-
+            <td className={styles['table-cell-detalletrabajo']} onClick={() => {toggleDisplayModalElegirTrabajo();}} style={commonStyleObjToUse}>
+                <div><h4>{trabajoEscogido.detalle_servicio}</h4></div>
             </td>
-            <td className={styles['table-cell-valorunitario']}>{/* Valor Unitario */}
-                <h4>${servicioData.valor ?? '0'} c/u</h4>
+            <td className={styles['table-cell-equipo']} onClick={() => {toggleDisplayModalElegirTrabajo();}} style={commonStyleObjToUse}>
+                <div><h4>{trabajoEscogido.equipo}</h4></div>
             </td>
-            <td className={styles['table-cell-cantidad']}>{/* Cantidad */}
-                {(!rowIsActive)
-                    ? <h4>{cantidadValue}</h4>
-                    : <input 
-                        type='number'
-                        onChange={(eObj) => {
-                            const newCantidad = Number(eObj.target.value);
-                            setCantidadInputValue(newCantidad)
-                        }}
-                        value={cantidadValue}
-                      />
-                }
+            <td className={styles['table-cell-infoadicional']} onClick={() => {toggleDisplayModalElegirTrabajo();}} style={commonStyleObjToUse}>
+                <div><h4>{trabajoEscogido.info_adicional}</h4></div>
             </td>
-            <td className={styles['table-cell-valor']}>{/* Valor */}
-                <h4>${servicioData.valor * cantidadValue}</h4>
+            <td className={styles['table-cell-valor']} onClick={() => {toggleDisplayModalElegirTrabajo();}} style={commonStyleObjToUse}>
+                <div><h4>${trabajoEscogido.valor}</h4></div>
             </td>
             
-            {
-            (rowIndex !== (listaServiciosSolicitados.length-1))
-            ? <></>
-            : <>
-                <td className={styles['servicio-solicitado-row-button']}>
-                    <button className={styles['add-row-button']} onClick={addNewRow}>
-                        <h4>+</h4>
-                    </button>
-                </td>
-
-                <td className={styles['servicio-solicitado-row-button']}>            
-                    {(rowIndex === 0)
-                        ? <button className={styles['hidden-button']}>
-                            <h4> </h4>
-                        </button>
-                        : <button className={styles['remove-row-button']} onClick={removeRow}>
-                            <h4>-</h4>
-                        </button>
-                    }
-                </td>
-            </>
-            }
+            <BotonesFinales_Mas_Menos
+                rowCharacteristics={rowCharacteristics}
+                addNewRow = {addNewRow}
+                removeRow = {removeRow}
+                styles = {styles}
+            />
         </tr>
     </>
     )
 };
-
-
-
-
-
-    // // * FUNCION QUE SE EJECUTA EN EL BOTON (+)
-    // const addNewNextServicioSolicitado = (rowIndex: number) => () => {
-    //     if (rowIndex < 0) return;
-    //     // const newArray = modifyArr({
-    //     //     mode: 'add',
-    //     //     arrToModify: listaServiciosSolicitados,
-    //     //     indexToUse: rowIndex + 1,
-    //     //     elementToAdd: getEmptyServicioSolicitado()
-    //     // }) as IServicioSolicitado[];
-    //     // setListaSolicitados(newArray);
-
-    //     listaServiciosSolicitados.push(getEmptyServicioSolicitado());
-    //     const proxyListaSolicitados = [...listaServiciosSolicitados];
-    //     setListaSolicitados(proxyListaSolicitados);
-    //     parentServSolicitadosArrSetter(proxyListaSolicitados);
-    // }
-
-    // // * FUNCION QUE SE EJECUTA EN EL BOTON (-)
-    // const removeCurrentServicioSolicitado = (rowIndex: number) => () => {
-    //     if (rowIndex < 0) return;
-    //     // const newArray = modifyArr({
-    //     //     mode: 'remove',
-    //     //     arrToModify: listaServiciosSolicitados,
-    //     //     indexToUse: rowIndex + 1,
-    //     // }) as IServicioSolicitado[];
-    //     // setListaSolicitados(newArray);
-
-    //     listaServiciosSolicitados.pop();
-    //     const proxyListaSolicitados = [...listaServiciosSolicitados];
-    //     setListaSolicitados(proxyListaSolicitados);
-    //     parentServSolicitadosArrSetter(proxyListaSolicitados);
-    // }

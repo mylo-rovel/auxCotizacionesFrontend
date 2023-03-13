@@ -10,14 +10,21 @@ import { IRegistrarServiciosPageProps, IValoresExtraCotizacion, IInputClienteDat
 import { getEmptyCotiValoresExtra, getEmptyClienteData, getEnsambledCotizacionEnviar, saveCotizacionesSwitcherID_container, getEmptyServicioSolicitado } from 'utils';
 
 const GenerarCotizacionPage: NextPageWithLayout<IRegistrarServiciosPageProps> = (props) => {
+  //* NECESARIO PARA CAMBIAR DE SUBPAGINA
   const [subPageIndex, setSubPageIndex] = useState<number>(0);
+
   //* ACÁ INCLUIMOS DATOS COMO LA FECHA Y OTRAS COSAS QUE QUEREMOS ENVIAR
   const [cotiValoresExtra, setCotiValoresExtra] = useState<IValoresExtraCotizacion>(getEmptyCotiValoresExtra());
   //* ACÁ INCLUIMOS TODOS LOS DATOS DEL CLIENTE
-  //TODO: OJO, REVISAR SI EN LA PAGINA DE CLIENTE TENEMOS QUE USAR setCotiValoresExtra
   const [clienteData, setClienteData] = useState<IInputClienteDataEnviar>(getEmptyClienteData());
   //* ACÁ INCLUIMOS TODOS LOS SERVICIOS SOLICITADOS QUE QUEREMOS ENVIAR
   const [serviciosSolicitadosArr, setServSolicitadosArr] = useState<IServicioSolicitado[]>([getEmptyServicioSolicitado()]);
+
+  const resetCotizacionValues = () => {
+    setCotiValoresExtra(getEmptyCotiValoresExtra());
+    setClienteData(getEmptyClienteData());
+    setServSolicitadosArr([getEmptyServicioSolicitado()]);
+  }
 
   const PageContentToRender = getPageContent(
     [
@@ -27,32 +34,32 @@ const GenerarCotizacionPage: NextPageWithLayout<IRegistrarServiciosPageProps> = 
 
       cotiValoresExtra, clienteData, serviciosSolicitadosArr,
 
-      getEnsambledCotizacionEnviar(cotiValoresExtra, clienteData, serviciosSolicitadosArr)
+      getEnsambledCotizacionEnviar(cotiValoresExtra, clienteData, serviciosSolicitadosArr),
+      
+      resetCotizacionValues
     ]
   )
   
-  const changePageButtonFunction = (indexVariation: number) => () => {
-    setSubPageIndex((prevState) => handleIndexChange(prevState,indexVariation, maxPageIndex))
+  const SwitchPageButtons = () => {
+    //* MOSTRAR LOS BOTONES DE ABAJO SÓLO SI NO ESTAMOS EN EL CALENDARIO
+    if (subPageIndex === 0) return <></>;
+    
+    const changePageButtonFunction = (indexVariation: number) => () => setSubPageIndex((prevState) => handleIndexChange(prevState,indexVariation, maxPageIndex))
+    const GoBackButton = () => <button onClick={changePageButtonFunction(-1)}>{`<=`}</button>;
+    const GoForwardButton = () => ((subPageIndex === maxPageIndex) || (subPageIndex < 2)) ? <></> : <button onClick={changePageButtonFunction(+1)}>{`=>`}</button>
+    return (<>
+        <div id={saveCotizacionesSwitcherID_container} className={styles['bottom-pageSwitchers-container']}>
+          <GoBackButton/>
+          <GoForwardButton/>
+        </div>
+    </>);
   }
-
-  const switchButtons = (subPageIndex === 0)
-      ? <></>
-      : <div id={saveCotizacionesSwitcherID_container} className={styles['bottom-pageSwitchers-container']}>
-           <button onClick={changePageButtonFunction(-1)}>{`<=`}</button>
-          {((subPageIndex === maxPageIndex) || (subPageIndex < 2))
-          ? <></>
-          :<button onClick={changePageButtonFunction(+1)}>{`=>`}</button>
-          }          
-        </div>;
-  
-  const ensambledObjectToSend = getEnsambledCotizacionEnviar(cotiValoresExtra, clienteData, serviciosSolicitadosArr);
   
   return (
     <>
-      {/* {JSON.stringify(getEnsambledCotizacionEnviar(cotiValoresExtra, clienteData, serviciosSolicitadosArr))} */}
+      {JSON.stringify(clienteData)}
       {PageContentToRender}
-      {/* MOSTRAR LOS BOTONES DE ABAJO SÓLO SI NO ESTAMOS EN EL CALENDARIO*/}
-      {switchButtons}
+      <SwitchPageButtons/>
     </>
   )
 };
